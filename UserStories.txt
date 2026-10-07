@@ -1,0 +1,17 @@
+As a player, I want to start a new city and see its goals and starting statistics so that I understand how to play.
+
+As a mayor, I want to compare buildings’ costs and effects on money, happiness, population, and pollution so that I can make informed building decisions.
+
+As a mayor, I want to advance the year and see how my decisions affected the city so that I can adjust my strategy.
+
+As a player, I want to see whether my city succeeded or failed and review its performance so that I can learn from my decisions.
+
+As a player, I want to continue growing my city after succeeding or start a new game so that I can keep playing and explore different strategies.
+
+As a player, I want to answer environmental trivia questions and receive explanations and rewards so that I can learn while helping my city.
+
+As a player, I want to sort falling items into recycling, compost, or trash and receive feedback so that I can learn proper waste classification and earn rewards.
+
+As a mayor, I want to unlock new buildings as my population grows and upgrade existing buildings so that I can develop my city.
+
+As a mayor, I want to receive weather warnings and choose preparations within my budget so that I can reduce damage to my city.
