@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+/*
+  World Model
+
+  id: the unique uuid for every world object
+  worldID: the unique string id that users make when first creating a world
+  passwordHash: the hashed password for the world
+  name: a name that the user assigns the world
+  createdAt: timestamp at which user first creates the world
+  updatedAt: timestamp at which any one of the above fields are changed
+*/
+model World {
+  id           Int      @id @default(autoincrement())
+  worldID      String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
