@@ -6,6 +6,7 @@ export async function createWorld(worldID: string, password: string, name: strin
     // check database to see if world already exists based on worldID.
     const existingWorld = await getWorldByWorldId(worldID);
 
+    // throw error if the world already exists
     if (existingWorld) {
         throw new AppError(409, "World already exists");
     }
