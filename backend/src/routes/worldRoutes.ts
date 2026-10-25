@@ -1,5 +1,7 @@
 import express, { type Request, type Response } from 'express';
 import { createWorld } from '../services/worldServices';
+import { CreateWorldRequest } from '../types/RequestTypes';
+import { AppError } from '../middleware/errorHandler';
 const worldRouter = express.Router();
 
 /**
@@ -15,7 +17,12 @@ const worldRouter = express.Router();
  */
 worldRouter.post("/create", async (req, res, next) => {
     try{
-        const { worldID, password, name } = req.body;
+        const { worldID, password, name }: CreateWorldRequest = req.body;
+
+        if(worldID.length == 0 || password.length == 0){
+            throw new AppError(400, "Inputs cannot be empty");
+        }
+        
         const world = await createWorld(worldID, password, name);
         const { passwordHash, ...safeWorld } = world; // removes passwordHash from the response object
 
