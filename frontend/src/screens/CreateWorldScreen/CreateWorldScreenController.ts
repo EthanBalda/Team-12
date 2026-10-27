@@ -54,9 +54,6 @@ export class CreateWorldScreenController extends ScreenController {
 			if (!response.ok) {
 			throw new Error(`Failed to create world: ${response.status}`);
 			}
-
-			const data = await response.json();
-			console.log(data);
             this.screenSwitcher.switchToScreen({type: "mainGame"})
 		} catch {
 			this.view.setError(
