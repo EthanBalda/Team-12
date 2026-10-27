@@ -2,6 +2,7 @@ import Konva from "konva";
 import type { ScreenSwitcher, Screen } from "./types.ts";
 import { CreateWorldScreenController } from "./screens/CreateWorldScreen/CreateWorldScreenController.ts";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
+import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 
 /**
  * Main Application - Coordinates all screens
@@ -19,6 +20,7 @@ class App implements ScreenSwitcher {
 
 
 	private createWorldController: CreateWorldScreenController;	
+    private mainGameController: MainGameScreenController;	
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -35,10 +37,12 @@ class App implements ScreenSwitcher {
 		// Initialize all screen controllers
 		// Each controller manages a Model, View, and handles user interactions
 		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
+		this.mainGameController = new MainGameScreenController(this);
 
 
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
+		this.layer.add(this.mainGameController.getView().getGroup());
 
         
 		
@@ -63,6 +67,7 @@ class App implements ScreenSwitcher {
 	switchToScreen(screen: Screen): void {
 		// Hide all screens first by setting their Groups to invisible
 		this.createWorldController.hide();
+		this.mainGameController.hide();
 
 		
 
@@ -72,6 +77,7 @@ class App implements ScreenSwitcher {
 				this.createWorldController.show();
 				break;
             case "mainGame":
+				this.mainGameController.startGame();
 				break;
 		}
 	}
