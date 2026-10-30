@@ -1,0 +1,16 @@
+[
+{"name": "Fossil-Fuel Power Plant","money": 60, "happiness": 10, "pollution": 60},
+{"name": "Park","money": 10, "happiness": 50, "pollution": -20},
+{"name": "Factory","money": 40, "happiness": 30, "pollution": 40},
+{"name": "Refinery","money": 50, "happiness": 10, "pollution": 50},
+
+{"name": "Wind Power Plant","money": 40, "happiness": 50, "pollution": 20},
+{"name": "Water Treatment Plant","money": 30, "happiness": 15, "pollution": -25},
+{"name": "Office","money": 80, "happiness": 30, "pollution": 20},
+{"name": "Steel Mill", "money": 90, "happiness": 20, "pollution": 80},
+
+{"name": "Solar Farm","money": 60, "happiness": 40, "pollution": 10},
+{"name": "Airport","money": 150, "happiness": 60, "pollution": 60},
+{"name": "Forest Reserve","money": 0, "happiness": 30, "pollution": -30},
+{"name": "Data Center","money": 100, "happiness": 20, "pollution": 50}
+]
