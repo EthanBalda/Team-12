@@ -37,6 +37,10 @@ jobs:
       - name: Install backend dependencies
         run: npm ci
         working-directory: backend
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: backend
 
       - name: Type-check backend
         run: npx tsc --noEmit
