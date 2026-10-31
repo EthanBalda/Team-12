@@ -52,6 +52,11 @@ export class MainGameScreenController extends ScreenController {
     this.view.show();
   }
 
+  endGame(): void {
+    //temorary to ensure type script checker runs without error this should be changed to a end game screen
+    this.screenSwitcher.switchToScreen({type: "mainGame"});
+  }
+
   getView(): MainGameScreenView {
     return this.view;
   }
