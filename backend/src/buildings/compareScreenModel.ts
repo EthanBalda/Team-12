@@ -12,13 +12,15 @@ export class compareScreenModel {
 	private buildings: Build[] = buildingsData as Build[];
 	private leftBuild: Build | null = null;
 	private rightBuild: Build | null = null;
+	private currentTier = 1;
 
 	/**
 	 * Pick two different random buildings from the JSON list
 	 */
 	pickNewPair(): void {
-		this.leftBuild = this.pickRandomBuild();
-		this.rightBuild = this.pickRandomBuild(this.leftBuild);
+		const tierBuilds = this.buildings.filter((b) => b.tier === this.currentTier);
+		this.leftBuild = this.pickRandomBuild(tierBuilds);
+		this.rightBuild = this.pickRandomBuild(tierBuilds, this.leftBuild);
 	}
 
 	getLeftBuild(): Build | null {
@@ -30,14 +32,25 @@ export class compareScreenModel {
 	}
 
 	/**
-	 * Pick a random building. Pass `exclude` to avoid picking the same one twice.
-	 * Returns null if there is nothing to pick.
+	 * Move to the next tier. Returns false if already on the highest tier.
 	 */
-	private pickRandomBuild(exclude: Build | null = null): Build | null {
-		const pool = this.buildings.filter((b) => b.name !== exclude?.name);
-		if (pool.length === 0) return null;
+	advanceTier(): boolean {
+		const maxTier = Math.max(...this.buildings.map((b) => b.tier));
+		if (this.currentTier >= maxTier) return false;
+		this.currentTier++;
+		return true;
+	}
 
-		const index = Math.floor(Math.random() * pool.length);
-		return pool[index];
+	getCurrentTier(): number {
+		return this.currentTier;
+	}
+
+	/**
+	 * Pick a random building without the same twice
+	 */
+	private pickRandomBuild(pool: Build[], exclude: Build | null = null): Build | null {
+		const candidates = pool.filter((b) => b.name !== exclude?.name);
+		if (candidates.length === 0) return null;
+		return candidates[Math.floor(Math.random() * candidates.length)];
 	}
 }

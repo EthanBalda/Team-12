@@ -186,7 +186,7 @@ export class compareScreenView implements View {
 	 * Show which building was selected
 	 */
 	showSelection(build: Build): void {
-		this.messageText.text(`Selected: ${build.name}`);
+		this.messageText.text(`Previously Selected: ${build.name}`);
 		this.group.getLayer()?.batchDraw();
 	}
 
