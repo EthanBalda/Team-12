@@ -18,10 +18,13 @@ const HIGH_POLLUTION_DAMAGE_MULTIPLIER = 1.5;
 export class WeatherEventModel {
   private readonly purchasedPreparationIds = new Set<string>();
 
-  constructor(
-    private readonly event: WeatherEvent,
-    private readonly city: WeatherCityState,
-  ) {}
+  private readonly event: WeatherEvent;
+  private readonly city: WeatherCityState;
+
+  constructor(event: WeatherEvent, city: WeatherCityState) {
+    this.event = event;
+    this.city = city;
+  }
 
   getEvent(): WeatherEvent {
     return this.event;

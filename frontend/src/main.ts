@@ -1,48 +1,87 @@
 import Konva from "konva";
-import { floodEvent } from "./weather/WeatherEvent";
-import { WeatherEventScreenController } from "./screens/WeatherEventScreenController";
+import type { ScreenSwitcher, Screen } from "./types.ts";
+import { CreateWorldScreenController } from "./screens/CreateWorldScreen/CreateWorldScreenController.ts";
+import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
+import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 
-const container = document.querySelector<HTMLDivElement>("#container");
+/**
+ * Main Application - Coordinates all screens
+ *
+ * This class demonstrates screen management using Konva Groups.
+ * Each screen (Menu, Game, Results) has its own Konva.Group that can be
+ * shown or hidden independently.
+ *
+ * Key concept: All screens are added to the same layer, but only one is
+ * visible at a time. This is managed by the switchToScreen() method.
+ */
+class App implements ScreenSwitcher {
+	private stage: Konva.Stage;
+	private layer: Konva.Layer;
 
-if (!container) {
-  throw new Error("Game container not found");
+
+	private createWorldController: CreateWorldScreenController;
+    private mainGameController: MainGameScreenController;
+
+	constructor(container: string) {
+		// Initialize Konva stage (the main canvas)
+		this.stage = new Konva.Stage({
+			container,
+			width: STAGE_WIDTH,
+			height: STAGE_HEIGHT,
+		});
+
+		// Create a layer (screens will be added to this layer)
+		this.layer = new Konva.Layer();
+		this.stage.add(this.layer);
+
+		// Initialize all screen controllers
+		// Each controller manages a Model, View, and handles user interactions
+		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
+		this.mainGameController = new MainGameScreenController(this);
+
+
+		// Add all screen groups to the layer
+		// All screens exist simultaneously but only one is visible at a time
+		this.layer.add(this.mainGameController.getView().getGroup());
+
+
+
+
+		// Draw the layer (render everything to the canvas)
+		this.layer.draw();
+
+		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
+		this.createWorldController.getView().show();
+
+	}
+
+	/**
+	 * Switch to a different screen
+	 *
+	 * This method implements screen management by:
+	 * 1. Hiding all screens (setting their Groups to invisible)
+	 * 2. Showing only the requested screen
+	 *
+	 * This pattern ensures only one screen is visible at a time.
+	 */
+	switchToScreen(screen: Screen): void {
+		// Hide all screens first by setting their Groups to invisible
+		this.createWorldController.hide();
+		this.mainGameController.hide();
+
+
+
+		// Show the requested screen based on the screen type
+		switch (screen.type) {
+			case "createWorld":
+				this.createWorldController.show();
+				break;
+            case "mainGame":
+				this.mainGameController.startGame();
+				break;
+		}
+	}
 }
 
-const SCREEN_WIDTH = 1000;
-const SCREEN_HEIGHT = 700;
-
-const stage = new Konva.Stage({
-  container,
-  width: SCREEN_WIDTH,
-  height: SCREEN_HEIGHT,
-});
-
-const layer = new Konva.Layer();
-stage.add(layer);
-
-//Temporary starting values
-const city = {
-  money: 250,
-  pollution: 80,
-};
-
-const weatherController = new WeatherEventScreenController(
-  floodEvent,
-  city,
-);
-
-layer.add(weatherController.getView().getGroup());
-weatherController.show();
-
-function resizeStage(): void {
-  const availableWidth = Math.max(1, window.innerWidth - 32);
-  const scale = Math.min(1, availableWidth / SCREEN_WIDTH);
-
-  stage.width(SCREEN_WIDTH * scale);
-  stage.height(SCREEN_HEIGHT * scale);
-  stage.scale({ x: scale, y: scale });
-  stage.batchDraw();
-}
-
-window.addEventListener("resize", resizeStage);
-resizeStage();
+// Initialize the application
+new App("container");
