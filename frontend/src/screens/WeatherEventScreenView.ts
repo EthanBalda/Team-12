@@ -9,6 +9,8 @@ export interface WeatherScreenState {
   protection: number;
   expectedDamage: number;
   purchasedPreparationIds: string[];
+  district: string;
+  resolved: boolean;
 }
 
 interface PreparationButton {
@@ -45,6 +47,7 @@ export class WeatherEventScreenView {
     description: string,
     preparations: Preparation[],
     onPurchase: (preparationId: string) => void,
+    onContinue: () => void,
   ) {
     this.group.add(
       new Konva.Rect({
@@ -128,9 +131,32 @@ export class WeatherEventScreenView {
       );
     });
 
-    this.messageText = this.addText("", 135, 618, 730, 16, {
+    this.messageText = this.addText("", 135, 603, 730, 16, {
       align: "center",
     });
+
+    this.continueButton.add(
+  new Konva.Rect({
+    width: 280,
+    height: 28,
+    fill: COLORS.teal,
+    cornerRadius: 8,
+  }),
+  this.continueLabel,
+);
+
+this.continueButton.on("click tap", onContinue);
+
+this.continueButton.on("mouseenter", () => {
+  const stage = this.group.getStage();
+  if (stage) {
+    stage.container().style.cursor = "pointer";
+  }
+});
+
+this.continueButton.on("mouseleave", () => this.resetCursor());
+
+this.group.add(this.continueButton);
   }
 
   getGroup(): Konva.Group {
@@ -150,16 +176,17 @@ export class WeatherEventScreenView {
 
   update(state: WeatherScreenState): void {
     this.budgetText.text(
-      `Available Budget: $${state.budget.toLocaleString()}`,
-    );
+  `${state.district.toUpperCase()} DISTRICT  •  ` +
+  `Budget: $${state.budget.toLocaleString()}`,
+);
 
-    this.impactText.text(
-      [
-        `Flood Severity: ${state.severity}`,
-        `Unprepared Damage: ${state.unprotectedDamage}  •  Protection: ${state.protection}`,
-        `Expected Damage: ${state.expectedDamage}`,
-      ].join("\n"),
-    );
+this.impactText.text(
+  [
+    `Flood Severity: ${state.severity}`,
+    `Unprepared Damage: ${state.unprotectedDamage}  •  Protection: ${state.protection}`,
+    `Damage per building in this district: ${state.expectedDamage}`,
+  ].join("\n"),
+);
 
     this.causeText.text(state.cause);
 
@@ -168,7 +195,7 @@ export class WeatherEventScreenView {
         button.preparation.id,
       );
       const affordable = state.budget >= button.preparation.cost;
-      const available = !purchased && affordable;
+      const available = !state.resolved && !purchased && affordable;
 
       button.background.fill(
         available ? COLORS.teal : COLORS.disabled,
@@ -177,18 +204,22 @@ export class WeatherEventScreenView {
       button.label.fill(available ? "white" : COLORS.navy);
 
       button.label.text(
-        purchased
-          ? "Purchased"
-          : affordable
-            ? "Purchase"
-            : "Insufficient Funds",
-      );
+  purchased
+    ? "Purchased"
+    : state.resolved
+      ? "Event Finished"
+      : affordable
+        ? "Purchase"
+        : "Insufficient Funds",
+);
 
       // The model also validates purchases; this prevents unavailable
       // options from receiving pointer events in the view.
       button.group.listening(available);
     }
-
+    this.continueLabel.text(
+      state.resolved ? "Return to City" : "Face the Flood",
+    );
     this.resetCursor();
     this.group.getLayer()?.batchDraw();
   }
@@ -335,4 +366,20 @@ export class WeatherEventScreenView {
       stage.container().style.cursor = "default";
     }
   }
+  private readonly continueButton = new Konva.Group({
+  x: 360,
+  y: 648,
+});
+
+private readonly continueLabel = new Konva.Text({
+  width: 280,
+  height: 28,
+  text: "Face the Flood",
+  fontFamily: FONT,
+  fontSize: 16,
+  fontStyle: "bold",
+  fill: "white",
+  align: "center",
+  verticalAlign: "middle",
+});
 }

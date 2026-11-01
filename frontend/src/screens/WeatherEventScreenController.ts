@@ -1,22 +1,35 @@
 import type { WeatherEvent } from "../weather/WeatherEvent";
 import {
-  WeatherEventModel,
-  type WeatherCityState,
-} from "../weather/WeatherEventModel";
+  CityWeatherEvent,
+  type WeatherResolution,
+} from "../weather/CityWeatherEvent";
+import {
+  MainGameScreenModel,
+  type District,
+} from "./MainGameScreen/MainGameScreenModel";
 import { WeatherEventScreenView } from "./WeatherEventScreenView";
 
 export class WeatherEventScreenController {
-  private readonly model: WeatherEventModel;
+  private readonly event: CityWeatherEvent;
   private readonly view: WeatherEventScreenView;
+  private readonly onComplete: (result: WeatherResolution) => void;
+  private completed = false;
 
-  constructor(event: WeatherEvent, city: WeatherCityState) {
-    this.model = new WeatherEventModel(event, city);
+  constructor(
+    definition: WeatherEvent,
+    city: MainGameScreenModel,
+    district: District,
+    onComplete: (result: WeatherResolution) => void,
+  ) {
+    this.event = new CityWeatherEvent(definition, city, district);
+    this.onComplete = onComplete;
 
     this.view = new WeatherEventScreenView(
-      event.name,
-      event.description,
-      event.preparations,
-      (preparationId) => this.handlePurchase(preparationId),
+      definition.name,
+      definition.description,
+      definition.preparations,
+      (id) => this.handlePurchase(id),
+      () => this.handleContinue(),
     );
 
     this.refreshView();
@@ -35,55 +48,49 @@ export class WeatherEventScreenController {
     this.view.hide();
   }
 
-  private handlePurchase(preparationId: string): void {
-    const result = this.model.purchasePreparation(preparationId);
-
+  private handlePurchase(id: string): void {
+    const result = this.event.purchasePreparation(id);
     this.refreshView();
 
     if (result.success) {
       this.view.showMessage(
-        "Preparation purchased. Your expected flood damage has decreased.",
+        "Preparation purchased. Buildings will take less damage.",
       );
       return;
     }
 
-    switch (result.reason) {
-      case "insufficient-funds":
-        this.view.showMessage(
-          "You do not have enough money for this.",
-          true,
-        );
-        break;
+    const messages = {
+      "insufficient-funds": "You do not have enough money.",
+      "already-purchased": "You have already purchased this preparation.",
+      "unknown-preparation": "This preparation is not available.",
+      "event-resolved": "This flood has already finished.",
+    };
 
-      case "already-purchased":
-        this.view.showMessage(
-          "You have already purchased this.",
-          true,
-        );
-        break;
+    this.view.showMessage(messages[result.reason], true);
+  }
 
-      case "unknown-preparation":
-        this.view.showMessage(
-          "This preparation is not available.",
-          true,
-        );
-        break;
+  private handleContinue(): void {
+    if (this.completed) {
+      return;
     }
+
+    if (!this.event.getState().resolved) {
+      const result = this.event.resolve();
+
+      this.refreshView();
+      this.view.showMessage(
+        `${result.destroyedBuildingIds.length} building(s) destroyed. ` +
+        `${result.populationLost} residents lost.\n` +
+        "Surviving buildings keep their remaining health.",
+      );
+      return;
+    }
+
+    this.completed = true;
+    this.onComplete(this.event.resolve());
   }
 
   private refreshView(): void {
-    const event = this.model.getEvent();
-
-    this.view.update({
-      budget: this.model.getBudget(),
-      severity: this.model.getSeverity(),
-      cause: this.model.getCause(),
-      unprotectedDamage: this.model.getUnprotectedDamage(),
-      protection: this.model.getProtection(),
-      expectedDamage: this.model.getExpectedDamage(),
-      purchasedPreparationIds: event.preparations
-        .filter((preparation) => this.model.hasPurchased(preparation.id))
-        .map((preparation) => preparation.id),
-    });
+    this.view.update(this.event.getState());
   }
 }
