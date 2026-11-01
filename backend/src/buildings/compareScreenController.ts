@@ -1,5 +1,5 @@
-import { ScreenController } from "../../types.ts";
-import type { ScreenSwitcher } from "../../types.ts";
+import { ScreenController } from "./types.ts";
+import type { ScreenSwitcher } from "./types.ts";
 import { compareScreenModel, type Build } from "./compareScreenModel.ts";
 import { compareScreenView } from "./compareScreenView.ts";
 
@@ -9,21 +9,48 @@ import { compareScreenView } from "./compareScreenView.ts";
 export class compareScreenController extends ScreenController {
 	private model: compareScreenModel;
 	private view: compareScreenView;
-	private screenSwitcher: ScreenSwitcher;
+	protected screenSwitcher: ScreenSwitcher;
+	private onBuildSelected: ((build: Build) => void) | undefined;
 
-	constructor(screenSwitcher: ScreenSwitcher) {
+	constructor(
+		screenSwitcher: ScreenSwitcher,
+		onBuildSelected?: (build: Build) => void,
+	) {
 		super();
 		this.screenSwitcher = screenSwitcher;
+		this.onBuildSelected = onBuildSelected;
 		this.model = new compareScreenModel();
-		this.view = new compareScreenView(() => this.handleStartClick());
+		this.view = new compareScreenView(
+			() => this.handleSelect("left"),
+			() => this.handleSelect("right"),
+		);
 	}
 
 	/**
-	 * Show the compare and refresh the stats so they include the latest game
+	 * Show the screen with a fresh random pair of buildings
 	 */
 	show(): void {
 		super.show();
-		this.refreshStats();
+		this.refreshBuilds();
+	}
+
+	private refreshBuilds(): void {
+		this.model.pickNewPair();
+		this.view.updateBuilds(
+			this.model.getLeftBuild(),
+			this.model.getRightBuild(),
+		);
+	}
+
+	private handleSelect(side: "left" | "right"): void {
+		const build =
+			side === "left"
+				? this.model.getLeftBuild()
+				: this.model.getRightBuild();
+		if (build === null) return;
+
+		this.view.showSelection(build);
+		this.onBuildSelected?.(build);
 	}
 
 	/**

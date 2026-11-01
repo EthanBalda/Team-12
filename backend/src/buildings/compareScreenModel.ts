@@ -1,47 +1,43 @@
 import buildingsData from "./buildOptions.json";
- 
+
 export type Build = {
 	name: string;
 	money: number;
 	happiness: number;
-	population: number;
+	pollution: number;
+	tier: number;
 };
- 
+
 export class compareScreenModel {
-	private stats: Build | null = null;
 	private buildings: Build[] = buildingsData as Build[];
- 
+	private leftBuild: Build | null = null;
+	private rightBuild: Build | null = null;
+
 	/**
-	 * Set the Build stats (null if they couldn't be loaded)
+	 * Pick two different random buildings from the JSON list
 	 */
-	setStats(stats: Build | null): void {
-		this.stats = stats;
+	pickNewPair(): void {
+		this.leftBuild = this.pickRandomBuild();
+		this.rightBuild = this.pickRandomBuild(this.leftBuild);
 	}
- 
-	/**
-	 * Get the Build stats
-	 */
-	getStats(): Build | null {
-		return this.stats;
+
+	getLeftBuild(): Build | null {
+		return this.leftBuild;
 	}
- 
+
+	getRightBuild(): Build | null {
+		return this.rightBuild;
+	}
+
 	/**
-	 * Pick a random building from the JSON list and store it as the current stats.
-	 * Pass the other tab's build as `exclude` so both tabs never show the same one.
-	 * Returns null (and stores null) if there is nothing to pick.
+	 * Pick a random building. Pass `exclude` to avoid picking the same one twice.
+	 * Returns null if there is nothing to pick.
 	 */
-	pickRandomBuild(exclude: Build | null = null): Build | null {
+	private pickRandomBuild(exclude: Build | null = null): Build | null {
 		const pool = this.buildings.filter((b) => b.name !== exclude?.name);
- 
-		if (pool.length === 0) {
-			this.stats = null;
-			return null;
-		}
- 
+		if (pool.length === 0) return null;
+
 		const index = Math.floor(Math.random() * pool.length);
-		this.stats = pool[index];
-		return this.stats;
+		return pool[index];
 	}
 }
-
-
