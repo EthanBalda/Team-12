@@ -1,29 +1,65 @@
 import { describe, expect, it } from "vitest";
-import { MainGameScreenModel } from "./MainGameScreenModel";
+import {
+  MainGameScreenModel,
+  type BuildingType,
+} from "./MainGameScreenModel";
 
 describe("MainGameScreenModel", () => {
-  it("tracks purchased buildings and preserves their effects", () => {
+  it("assigns the correct health to each building type", () => {
     const model = new MainGameScreenModel();
 
-    expect(model.build("park")).toBe(true);
-    expect(model.build("housing")).toBe(true);
-    expect(model.build("factory")).toBe(true);
+    model.build("park", "north");
+    model.build("housing", "south");
+    model.build("factory", "east");
+    model.build("renewable", "west");
 
     expect(model.getBuildings()).toEqual([
-      { id: "building-1", type: "park" },
-      { id: "building-2", type: "housing" },
-      { id: "building-3", type: "factory" },
+      {
+        id: "building-1",
+        type: "park",
+        district: "north",
+        health: 25,
+        maxHealth: 25,
+      },
+      {
+        id: "building-2",
+        type: "housing",
+        district: "south",
+        health: 50,
+        maxHealth: 50,
+      },
+      {
+        id: "building-3",
+        type: "factory",
+        district: "east",
+        health: 75,
+        maxHealth: 75,
+      },
+      {
+        id: "building-4",
+        type: "renewable",
+        district: "west",
+        health: 100,
+        maxHealth: 100,
+      },
     ]);
 
     expect(model.getStats()).toEqual({
-      money: 310000,
+      money: 210000,
       population: 10500,
       pollution: 30,
       year: 1,
     });
   });
 
-  it("rejects unaffordable buildings without changing city state", () => {
+  it("keeps existing build calls compatible by defaulting to north", () => {
+    const model = new MainGameScreenModel();
+    model.build("park");
+
+    expect(model.getBuildings()[0]!.district).toBe("north");
+  });
+
+  it("rejects unaffordable buildings without changing state", () => {
     const model = new MainGameScreenModel();
 
     for (let index = 0; index < 6; index++) {
@@ -38,149 +74,178 @@ describe("MainGameScreenModel", () => {
     expect(model.getBuildings()).toEqual(buildingsBefore);
   });
 
-  it("prevents callers from modifying the building inventory", () => {
+  it("returns isolated building snapshots", () => {
     const model = new MainGameScreenModel();
     model.build("park");
 
     const buildings = model.getBuildings();
-    buildings[0]!.type = "factory";
+    buildings[0]!.health = 0;
+    buildings[0]!.district = "south";
     buildings.pop();
 
-    expect(model.getBuildings()).toEqual([
-      { id: "building-1", type: "park" },
-    ]);
-  });
-
-  it("reduces population and destroys only the selected buildings", () => {
-    const model = new MainGameScreenModel();
-    model.build("park");
-    model.build("housing");
-    model.build("factory");
-
-    const result = model.applyWeatherDamage(60, ["building-2"]);
-
-    expect(result).toEqual({
-      populationLost: 60,
-      destroyedBuildings: [
-        { id: "building-2", type: "housing" },
-      ],
+    expect(model.getBuildings()[0]).toMatchObject({
+      health: 25,
+      district: "north",
     });
-
-    expect(model.getStats()).toEqual({
-      money: 310000,
-      population: 10440,
-      pollution: 30,
-      year: 1,
-    });
-
-    expect(model.getBuildings()).toEqual([
-      { id: "building-1", type: "park" },
-      { id: "building-3", type: "factory" },
-    ]);
   });
 
-  it("does not reduce population below zero", () => {
+  it("damages only buildings in the affected district", () => {
     const model = new MainGameScreenModel();
+    model.build("housing", "north");
+    model.build("factory", "south");
 
-    expect(model.applyWeatherDamage(20000, [])).toEqual({
-      populationLost: 10000,
-      destroyedBuildings: [],
-    });
+    const result = model.applyWeatherDamage(20, "north");
 
-    expect(model.getStats().population).toBe(0);
+    expect(result.populationLost).toBe(0);
+    expect(result.destroyedBuildings).toEqual([]);
+    expect(result.affectedBuildings).toHaveLength(1);
+
+    expect(model.getBuildings().map((building) => building.health))
+      .toEqual([30, 75]);
+
+    expect(model.getStats().population).toBe(10500);
   });
 
-  it("allows weather damage when the city has no buildings", () => {
+  it("preserves damage between separate weather events", () => {
     const model = new MainGameScreenModel();
+    model.build("housing", "north");
 
-    expect(model.applyWeatherDamage(40, [])).toEqual({
-      populationLost: 40,
-      destroyedBuildings: [],
-    });
+    model.applyWeatherDamage(20, "north");
+    expect(model.getBuildings()[0]!.health).toBe(30);
 
-    expect(model.getStats().population).toBe(9960);
-  });
+    const result = model.applyWeatherDamage(30, "north");
 
-  it("leaves the city unchanged when no damage occurs", () => {
-    const model = new MainGameScreenModel();
-    model.build("park");
-
-    const statsBefore = model.getStats();
-    const buildingsBefore = model.getBuildings();
-
-    expect(model.applyWeatherDamage(0, [])).toEqual({
-      populationLost: 0,
-      destroyedBuildings: [],
-    });
-
-    expect(model.getStats()).toEqual(statsBefore);
-    expect(model.getBuildings()).toEqual(buildingsBefore);
-  });
-
-  it("rejects unknown building IDs before applying any damage", () => {
-    const model = new MainGameScreenModel();
-    model.build("park");
-
-    const statsBefore = model.getStats();
-    const buildingsBefore = model.getBuildings();
-
-    expect(() =>
-      model.applyWeatherDamage(60, ["building-1", "missing"]),
-    ).toThrow("Building not found");
-
-    expect(model.getStats()).toEqual(statsBefore);
-    expect(model.getBuildings()).toEqual(buildingsBefore);
-  });
-
-  it("counts a duplicated building ID only once", () => {
-    const model = new MainGameScreenModel();
-    model.build("park");
-
-    const result = model.applyWeatherDamage(
-      40,
-      ["building-1", "building-1"],
-    );
-
-    expect(result.destroyedBuildings).toHaveLength(1);
+    expect(result.populationLost).toBe(500);
+    expect(result.destroyedBuildings[0]!.health).toBe(0);
     expect(model.getBuildings()).toEqual([]);
+    expect(model.getStats().population).toBe(10000);
   });
 
-  it.each([-1, 1.5, NaN, Infinity])(
-    "rejects invalid population loss %s without changing state",
-    (populationLoss) => {
+  const destructionCases: [BuildingType, number, number][] = [
+    ["park", 25, 50],
+    ["housing", 50, 500],
+    ["factory", 75, 100],
+    ["renewable", 100, 150],
+  ];
+
+  it.each(destructionCases)(
+    "destroying %s at %s damage removes %s residents",
+    (type, damage, expectedLoss) => {
       const model = new MainGameScreenModel();
-      const statsBefore = model.getStats();
+      model.build(type, "east");
+      const populationBefore = model.getStats().population;
 
-      expect(() =>
-        model.applyWeatherDamage(populationLoss, []),
-      ).toThrow("Population loss");
+      const result = model.applyWeatherDamage(damage, "east");
 
-      expect(model.getStats()).toEqual(statsBefore);
+      expect(result.populationLost).toBe(expectedLoss);
+      expect(result.destroyedBuildings).toHaveLength(1);
+      expect(model.getBuildings()).toEqual([]);
+      expect(model.getStats().population)
+        .toBe(populationBefore - expectedLoss);
     },
   );
 
-  it("does not reuse the ID of a destroyed building", () => {
+  it("combines population losses from multiple destroyed buildings", () => {
     const model = new MainGameScreenModel();
 
-    model.build("park");
-    model.applyWeatherDamage(0, ["building-1"]);
-    model.build("factory");
+    model.build("park", "north");
+    model.build("housing", "north");
+    model.build("factory", "north");
+    model.build("renewable", "north");
 
-    expect(model.getBuildings()).toEqual([
-      { id: "building-2", type: "factory" },
-    ]);
+    const result = model.applyWeatherDamage(100, "north");
+
+    expect(result.populationLost).toBe(800);
+    expect(result.destroyedBuildings).toHaveLength(4);
+    expect(model.getStats().population).toBe(9700);
+    expect(model.getStats().money).toBe(210000);
+    expect(model.getBuildings()).toEqual([]);
   });
 
-  it("preserves the existing year advancement behavior", () => {
+  it("does not remove residents again for already destroyed buildings", () => {
     const model = new MainGameScreenModel();
+    model.build("park", "north");
+
+    model.applyWeatherDamage(25, "north");
+    const result = model.applyWeatherDamage(25, "north");
+
+    expect(result.populationLost).toBe(0);
+    expect(result.destroyedBuildings).toEqual([]);
+    expect(model.getStats().population).toBe(9950);
+  });
+
+  it("does nothing when damage is zero or the district is empty", () => {
+    const model = new MainGameScreenModel();
+    model.build("housing", "north");
+
+    const statsBefore = model.getStats();
+    const buildingsBefore = model.getBuildings();
+
+    model.applyWeatherDamage(0, "north");
+    model.applyWeatherDamage(100, "south");
+
+    expect(model.getStats()).toEqual(statsBefore);
+    expect(model.getBuildings()).toEqual(buildingsBefore);
+  });
+
+  it.each([-1, 1.5, NaN, Infinity])(
+    "rejects invalid damage %s without changing state",
+    (damage) => {
+      const model = new MainGameScreenModel();
+      model.build("park");
+
+      const statsBefore = model.getStats();
+      const buildingsBefore = model.getBuildings();
+
+      expect(() => model.applyWeatherDamage(damage, "north"))
+        .toThrow("Damage");
+
+      expect(model.getStats()).toEqual(statsBefore);
+      expect(model.getBuildings()).toEqual(buildingsBefore);
+    },
+  );
+
+  it("does not reuse destroyed building IDs", () => {
+    const model = new MainGameScreenModel();
+
+    model.build("park", "north");
+    model.applyWeatherDamage(25, "north");
+    model.build("factory", "south");
+
+    expect(model.getBuildings()[0]!.id).toBe("building-2");
+  });
+
+  it("allows spending the exact remaining budget", () => {
+    const model = new MainGameScreenModel();
+
+    expect(model.spendMoney(500000)).toBe(true);
+    expect(model.getStats().money).toBe(0);
+  });
+
+  it.each([-1, 1.5, NaN, Infinity, 500001])(
+    "rejects invalid or unaffordable spending of %s",
+    (amount) => {
+      const model = new MainGameScreenModel();
+
+      expect(model.spendMoney(amount)).toBe(false);
+      expect(model.getStats().money).toBe(500000);
+    },
+  );
+
+  it("preserves year advancement without repairing buildings", () => {
+    const model = new MainGameScreenModel();
+    model.build("factory", "north");
+    model.applyWeatherDamage(20, "north");
 
     model.endYear();
 
     expect(model.getStats()).toEqual({
-      money: 520400,
+      money: 460400,
       population: 10200,
-      pollution: 27,
+      pollution: 37,
       year: 2,
     });
+
+    expect(model.getBuildings()[0]!.health).toBe(55);
   });
 });

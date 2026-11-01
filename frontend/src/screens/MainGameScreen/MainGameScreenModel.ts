@@ -1,20 +1,54 @@
-export type BuildingType = "park" | "housing" | "factory";
+export type BuildingType =
+  | "park"
+  | "housing"
+  | "factory"
+  | "renewable";
+
+export const DISTRICTS = ["north", "south", "east", "west"] as const;
+export type District = (typeof DISTRICTS)[number];
 
 export interface CityBuilding {
   id: string;
   type: BuildingType;
+  district: District;
+  health: number;
+  maxHealth: number;
 }
+
+interface BuildingDefinition {
+  cost: number;
+  maxHealth: number;
+  populationLoss: number;
+}
+
+const BUILDING_DEFINITIONS: Record<BuildingType, BuildingDefinition> = {
+  park: {
+    cost: 50000,
+    maxHealth: 25,
+    populationLoss: 50,
+  },
+  housing: {
+    cost: 80000,
+    maxHealth: 50,
+    populationLoss: 500,
+  },
+  factory: {
+    cost: 60000,
+    maxHealth: 75,
+    populationLoss: 100,
+  },
+  renewable: {
+    cost: 100000, // Provisional price.
+    maxHealth: 100,
+    populationLoss: 150,
+  },
+};
 
 export interface WeatherDamageResult {
   populationLost: number;
+  affectedBuildings: CityBuilding[];
   destroyedBuildings: CityBuilding[];
 }
-
-const BUILDING_COSTS: Record<BuildingType, number> = {
-  park: 50000,
-  housing: 80000,
-  factory: 60000,
-};
 
 export class MainGameScreenModel {
   private population = 10000;
@@ -35,22 +69,37 @@ export class MainGameScreenModel {
   }
 
   getBuildings(): CityBuilding[] {
-    // Return copies so callers cannot change the city's inventory directly.
     return this.buildings.map((building) => ({ ...building }));
   }
 
-  build(type: BuildingType): boolean {
-    const cost = BUILDING_COSTS[type];
-
-    if (this.money < cost) {
+  spendMoney(amount: number): boolean {
+    if (
+      !Number.isSafeInteger(amount) ||
+      amount < 0 ||
+      amount > this.money
+    ) {
       return false;
     }
 
-    this.money -= cost;
+    this.money -= amount;
+    return true;
+  }
+
+  build(type: BuildingType, district: District = "north"): boolean {
+    this.validateDistrict(district);
+
+    const definition = BUILDING_DEFINITIONS[type];
+
+    if (!this.spendMoney(definition.cost)) {
+      return false;
+    }
 
     this.buildings.push({
       id: `building-${this.nextBuildingId}`,
       type,
+      district,
+      health: definition.maxHealth,
+      maxHealth: definition.maxHealth,
     });
     this.nextBuildingId++;
 
@@ -66,47 +115,74 @@ export class MainGameScreenModel {
       case "factory":
         this.pollution = Math.min(100, this.pollution + 10);
         break;
+
+      case "renewable":
+        break;
     }
 
     return true;
   }
 
   applyWeatherDamage(
-    populationLoss: number,
-    destroyedBuildingIds: readonly string[],
+    damage: number,
+    district: District,
   ): WeatherDamageResult {
-    if (!Number.isSafeInteger(populationLoss) || populationLoss < 0) {
-      throw new Error("Population loss must be a non-negative safe integer");
+    if (!Number.isSafeInteger(damage) || damage < 0) {
+      throw new Error("Damage must be a non-negative safe integer");
     }
 
-    const destroyedIds = new Set(destroyedBuildingIds);
-    const existingIds = new Set(
-      this.buildings.map((building) => building.id),
-    );
+    this.validateDistrict(district);
 
-    // Validate everything before changing any city state.
-    for (const id of destroyedIds) {
-      if (!existingIds.has(id)) {
-        throw new Error(`Building not found: ${id}`);
+    if (damage === 0) {
+      return {
+        populationLost: 0,
+        affectedBuildings: [],
+        destroyedBuildings: [],
+      };
+    }
+
+    const affectedBuildings: CityBuilding[] = [];
+    const destroyedBuildings: CityBuilding[] = [];
+
+    const updatedBuildings = this.buildings.map((building) => {
+      if (building.district !== district) {
+        return building;
       }
-    }
 
-    const destroyedBuildings = this.buildings.filter(
-      (building) => destroyedIds.has(building.id),
+      const updated = {
+        ...building,
+        health: Math.max(0, building.health - damage),
+      };
+
+      affectedBuildings.push({ ...updated });
+
+      if (updated.health === 0) {
+        destroyedBuildings.push({ ...updated });
+      }
+
+      return updated;
+    });
+
+    const requestedPopulationLoss = destroyedBuildings.reduce(
+      (total, building) =>
+        total + BUILDING_DEFINITIONS[building.type].populationLoss,
+      0,
     );
 
-    const populationLost = Math.min(populationLoss, this.population);
+    const populationLost = Math.min(
+      this.population,
+      requestedPopulationLoss,
+    );
 
+    this.buildings = updatedBuildings.filter(
+      (building) => building.health > 0,
+    );
     this.population -= populationLost;
-    this.buildings = this.buildings.filter(
-      (building) => !destroyedIds.has(building.id),
-    );
 
     return {
       populationLost,
-      destroyedBuildings: destroyedBuildings.map(
-        (building) => ({ ...building }),
-      ),
+      affectedBuildings,
+      destroyedBuildings,
     };
   }
 
@@ -115,5 +191,11 @@ export class MainGameScreenModel {
     this.population += Math.round(this.population * 0.02);
     this.money += this.population * 2;
     this.pollution = Math.min(100, this.pollution + 2);
+  }
+
+  private validateDistrict(district: District): void {
+    if (!DISTRICTS.includes(district)) {
+      throw new Error(`Unknown district: ${district}`);
+    }
   }
 }
