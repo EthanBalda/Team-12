@@ -1,4 +1,5 @@
 import type { Group } from "konva/lib/Group";
+import type { MinigameId } from "./minigames/registry";
 
 export interface ScreenView {
   show(): void;
@@ -17,7 +18,9 @@ export interface View extends ScreenView{
  */
 export type Screen =
 	| { type: "createWorld" }
-    | { type: "mainGame" };
+    | { type: "mainGame" }
+	| { type: "miniGame"; id: MinigameId }
+	| { type: "resumeGame"};
 
 export abstract class ScreenController {
 	abstract getView(): ScreenView;

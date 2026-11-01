@@ -11,15 +11,18 @@ export class MainGameScreenView implements View {
   private statsText: Record<string, Konva.Text> = {};
 	private onBuild: (type: BuildingType) => void;
 	private onEndYear: () => void;
+  private onMinigame: () => void;
   constructor(
     onBuild: (type: BuildingType) => void,
     onEndYear: () => void,
+    onMinigame: () => void,
   ) {
     this.group = new Konva.Group({ visible: false });
     this.statsGroup = new Konva.Group();
     this.modalGroup = new Konva.Group({ visible: false });
-	this.onBuild = onBuild;
+	  this.onBuild = onBuild;
   	this.onEndYear = onEndYear;
+    this.onMinigame = onMinigame;
 
 
     //simple background color
@@ -84,6 +87,17 @@ export class MainGameScreenView implements View {
       55,
       "#315f9b",
       () => this.onEndYear(),
+    );
+
+    this.addButton(
+      this.group,
+      "Minigame",
+      STAGE_WIDTH / 2 - 90,
+      STAGE_HEIGHT - 85,
+      180,
+      55,
+      "#8a5a9b",
+      () => this.onMinigame(),
     );
 
     this.createBuildModal();
