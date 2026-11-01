@@ -6,8 +6,6 @@ Create a menu that displays available buildings, their costs, and the effects it
 -Setters and getters
 Write tests to verify that the building costs and effects are displayed and applied correctly
 
-
-
 As a mayor, I want to unlock new buildings as my population grows and upgrade existing buildings so that I can develop my city.
 Define progression boundaries, upgrades to costs and effects
 -Yearly.
@@ -23,25 +21,21 @@ Run and pass tests, debug failures and manually check tier progression
 
 import Konva from "konva";
 import type { ScreenSwitcher, Screen } from "./types.ts";
-import { compareScreenController } from "compareScreenController.ts";
+import { compareScreenController } from "./compareScreenController.ts";
+import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 
 /**
  * Main Application - Coordinates all screens
  *
- * This class demonstrates screen management using Konva Groups.
- * Each screen (Menu, Game, Results) has its own Konva.Group that can be
- * shown or hidden independently.
- *
- * Key concept: All screens are added to the same layer, but only one is
+ * Each screen has its own Konva.Group that can be shown or hidden
+ * independently. All screens are added to the same layer, but only one is
  * visible at a time. This is managed by the switchToScreen() method.
  */
 class App implements ScreenSwitcher {
 	private stage: Konva.Stage;
 	private layer: Konva.Layer;
 
-
-	private createWorldController: CreateWorldScreenController;	
-    private mainGameController: MainGameScreenController;	
+	private compareController: compareScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -55,50 +49,28 @@ class App implements ScreenSwitcher {
 		this.layer = new Konva.Layer();
 		this.stage.add(this.layer);
 
-		// Initialize all screen controllers
 		// Each controller manages a Model, View, and handles user interactions
-		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
-		this.mainGameController = new MainGameScreenController(this);
-
+		this.compareController = new compareScreenController(this, (build) => {
+			console.log("Selected building:", build);
+		});
 
 		// Add all screen groups to the layer
-		// All screens exist simultaneously but only one is visible at a time
-		this.layer.add(this.mainGameController.getView().getGroup());
+		this.layer.add(this.compareController.getView().getGroup());
 
-        
-		
-
-		// Draw the layer (render everything to the canvas)
+		// Start on the comparison screen
+		this.switchToScreen({ type: "comparison" });
 		this.layer.draw();
-
-		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
-		this.createWorldController.getView().show();
-
 	}
 
 	/**
-	 * Switch to a different screen
-	 *
-	 * This method implements screen management by:
-	 * 1. Hiding all screens (setting their Groups to invisible)
-	 * 2. Showing only the requested screen
-	 *
-	 * This pattern ensures only one screen is visible at a time.
+	 * Switch to a different screen: hide everything, then show the requested one.
 	 */
 	switchToScreen(screen: Screen): void {
-		// Hide all screens first by setting their Groups to invisible
-		this.createWorldController.hide();
-		this.mainGameController.hide();
+		this.compareController.hide();
 
-		
-
-		// Show the requested screen based on the screen type
 		switch (screen.type) {
-			case "createWorld":
-				this.createWorldController.show();
-				break;
-            case "mainGame":
-				this.mainGameController.startGame();
+			case "comparison":
+				this.compareController.show();
 				break;
 		}
 	}

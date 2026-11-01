@@ -1,20 +1,18 @@
-import type { Group } from "konva/lib/Group";
+import type Konva from "konva";
 
 export interface ScreenView {
-  show(): void;
-  hide(): void;
+	show(): void;
+	hide(): void;
 }
 
-export interface View extends ScreenView{
-	getGroup(): Group;
+export interface View extends ScreenView {
+	getGroup(): Konva.Group;
 }
 
 /**
  * Screen types for navigation
  */
-export type Screen =
-	| { type: "comparison" }
-;
+export type Screen = { type: "comparison" };
 
 export abstract class ScreenController {
 	abstract getView(): ScreenView;

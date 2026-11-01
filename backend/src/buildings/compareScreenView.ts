@@ -1,11 +1,7 @@
 import Konva from "konva";
-import type { View } from "../../../../frontend/src/types.ts";
+import type { View } from "./types.ts";
 import type { Build } from "./compareScreenModel.ts";
-
-/**
- * compareScreenView - Renders the compare screen
- */
-
+import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 
 const PANEL_WIDTH = 500;
 const PANEL_HEIGHT = 620;
@@ -15,82 +11,121 @@ const PANEL_PADDING = 30;
 const BUTTON_WIDTH = 160;
 const BUTTON_HEIGHT = 50;
 
+type Panel = {
+	group: Konva.Group;
+	nameText: Konva.Text;
+	statsText: Konva.Text;
+};
+
+/**
+ * compareScreenView - Renders the compare screen (two building panels side by side)
+ */
 export class compareScreenView implements View {
 	private group: Konva.Group;
-	private statsText: Konva.Text;
+	private leftPanel: Panel;
+	private rightPanel: Panel;
+	private messageText: Konva.Text;
 
-	constructor(onSelectClick: () => void) {
-		const STAGE_WIDTH = 1200;
-		const STAGE_HEIGHT = 800;
-
+	constructor(onSelectLeft: () => void, onSelectRight: () => void) {
 		this.group = new Konva.Group({ visible: true });
 
-		// Title text
+		// Title (top of screen)
 		const title = new Konva.Text({
-			x: STAGE_WIDTH/2,
-			y: STAGE_HEIGHT-50,
+			x: 0,
+			y: 30,
+			width: STAGE_WIDTH,
 			text: "Choose Building",
-			fontSize: 16,
+			fontSize: 32,
+			fontStyle: "bold",
 			fontFamily: "Arial",
 			fill: "Black",
 			align: "center",
 		});
-		// Center the text using offsetX
-		title.offsetX(title.width() / 2);
 		this.group.add(title);
 
-
+		// Two panels + gap are centered on the stage
 		const totalWidth = PANEL_WIDTH * 2 + PANEL_GAP;
 		const leftX = (STAGE_WIDTH - totalWidth) / 2;
- 
-		const left = this.createPanel(leftX, onSelectClick);
-		this.statsText = left.statsText;
-		this.group.add(left.group);
+		const rightX = leftX + PANEL_WIDTH + PANEL_GAP;
 
-		// Stats display in the building selection frame
-		this.statsText = new Konva.Text({
-			x: STAGE_WIDTH / 2,
-			y: 500,
+		this.leftPanel = this.createPanel(leftX, onSelectLeft);
+		this.rightPanel = this.createPanel(rightX, onSelectRight);
+		this.group.add(this.leftPanel.group, this.rightPanel.group);
+
+		// Feedback message under the panels
+		this.messageText = new Konva.Text({
+			x: 0,
+			y: STAGE_HEIGHT - 60,
+			width: STAGE_WIDTH,
 			text: "",
-			fontSize: 18,
+			fontSize: 22,
 			fontFamily: "Arial",
-			fill: "Black",
+			fill: "Green",
 			align: "center",
 		});
-		this.group.add(this.statsText);
+		this.group.add(this.messageText);
 	}
 
-
-	private createPanel(x: number, onSelect: () => void) {
+	/**
+	 * Builds one comparison tab. Children are positioned relative to the panel group.
+	 */
+	private createPanel(x: number, onSelect: () => void): Panel {
 		const panel = new Konva.Group({ x, y: PANEL_Y });
- 
+
 		const frame = new Konva.Rect({
 			width: PANEL_WIDTH,
 			height: PANEL_HEIGHT,
 			fill: "White",
 			stroke: "Black",
+			strokeWidth: 4,
+			cornerRadius: 10,
 		});
 		panel.add(frame);
- 
-		const statsText = new Konva.Text({
+
+		const nameText = new Konva.Text({
 			x: PANEL_PADDING,
 			y: PANEL_PADDING,
 			width: PANEL_WIDTH - PANEL_PADDING * 2,
 			text: "",
-			fontSize: 20,
+			fontSize: 28,
+			fontStyle: "bold",
 			fontFamily: "Arial",
 			fill: "Black",
-			lineHeight: 1.5,
+			align: "left",
+		});
+		panel.add(nameText);
+
+		const divider = new Konva.Line({
+			points: [
+				PANEL_PADDING,
+				PANEL_PADDING + 50,
+				PANEL_WIDTH - PANEL_PADDING,
+				PANEL_PADDING + 50,
+			],
+			stroke: "#999",
+			strokeWidth: 2,
+		});
+		panel.add(divider);
+
+		const statsText = new Konva.Text({
+			x: PANEL_PADDING,
+			y: PANEL_PADDING + 70,
+			width: PANEL_WIDTH - PANEL_PADDING * 2,
+			text: "",
+			fontSize: 22,
+			fontFamily: "Arial",
+			fill: "#333",
+			lineHeight: 1.6,
 			align: "left",
 		});
 		panel.add(statsText);
- 
+
 		// Select button pinned to the bottom center of the panel
 		const button = new Konva.Group({
 			x: (PANEL_WIDTH - BUTTON_WIDTH) / 2,
 			y: PANEL_HEIGHT - BUTTON_HEIGHT - PANEL_PADDING,
 		});
- 
+
 		const buttonRect = new Konva.Rect({
 			width: BUTTON_WIDTH,
 			height: BUTTON_HEIGHT,
@@ -99,7 +134,7 @@ export class compareScreenView implements View {
 			strokeWidth: 3,
 			cornerRadius: 10,
 		});
- 
+
 		// Text sized to the button so align/verticalAlign center it exactly
 		const buttonLabel = new Konva.Text({
 			width: BUTTON_WIDTH,
@@ -113,27 +148,48 @@ export class compareScreenView implements View {
 			verticalAlign: "middle",
 			listening: false,
 		});
- 
+
 		button.add(buttonRect, buttonLabel);
 		button.on("click tap", onSelect);
 		panel.add(button);
- 
-		return { group: panel, statsText };
+
+		return { group: panel, nameText, statsText };
+	}
+
+	private renderPanel(panel: Panel, build: Build | null): void {
+		if (build === null) {
+			panel.nameText.text("Unavailable");
+			panel.statsText.text("Stats unavailable");
+			return;
+		}
+
+		panel.nameText.text(build.name);
+		panel.statsText.text(
+			`Cost: ${build.money}\n` +
+				`Happiness: ${build.happiness}\n` +
+				`Pollution: ${build.pollution}\n` +
+				`Tier: ${build.tier}`,
+		);
 	}
 
 	/**
-	 * Update the stats display (null if they couldn't be loaded)
+	 * Update both panels (null if a build couldn't be loaded)
 	 */
-	updateStats(build: Build | null): void {
-	if (build === null) {
-		this.statsText.text("Stats unavailable");
-	} else {
-		this.statsText.text(
-			`Name: ${build.name}\nCost: ${build.money}\nHappiness: ${build.happiness}\nPopulation: ${build.population}`,
-		);
+	updateBuilds(left: Build | null, right: Build | null): void {
+		this.renderPanel(this.leftPanel, left);
+		this.renderPanel(this.rightPanel, right);
+		this.messageText.text("");
+		this.group.getLayer()?.batchDraw();
 	}
-	this.group.getLayer()?.batchDraw();
-}
+
+	/**
+	 * Show which building was selected
+	 */
+	showSelection(build: Build): void {
+		this.messageText.text(`Selected: ${build.name}`);
+		this.group.getLayer()?.batchDraw();
+	}
+
 	/**
 	 * Show the screen
 	 */
