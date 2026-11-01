@@ -42,16 +42,17 @@ export class compareScreenController extends ScreenController {
 		);
 	}
 
-	private handleSelect(side: "left" | "right"): void {
-		const build =
-			side === "left"
-				? this.model.getLeftBuild()
-				: this.model.getRightBuild();
-		if (build === null) return;
 
-		this.view.showSelection(build);
-		this.onBuildSelected?.(build);
-	}
+	private handleSelect(side: "left" | "right"): void {
+	const build = 
+		side === "left" ? this.model.getLeftBuild() : this.model.getRightBuild();
+	if (build === null) return;
+
+	this.onBuildSelected?.(build);
+	this.model.advanceTier()
+	this.refreshBuilds();
+	this.view.showSelection(build);
+}
 
 	/**
 	 * Get the view

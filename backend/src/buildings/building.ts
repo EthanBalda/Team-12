@@ -45,13 +45,11 @@ class App implements ScreenSwitcher {
 			height: STAGE_HEIGHT,
 		});
 
-		// Create a layer (screens will be added to this layer)
 		this.layer = new Konva.Layer();
 		this.stage.add(this.layer);
 
-		// Each controller manages a Model, View, and handles user interactions
 		this.compareController = new compareScreenController(this, (build) => {
-			console.log("Selected building:", build);
+			console.log("Selected ", build);
 		});
 
 		// Add all screen groups to the layer
