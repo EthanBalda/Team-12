@@ -12,7 +12,7 @@ export async function insertWorld(worldId: string, hashedPassword: string, name:
     return await prisma.world.create({
         data: {
             worldID: worldId,
-            passwordHash: hashedPassword, 
+            passwordHash: hashedPassword,
             name: name
         }
     });

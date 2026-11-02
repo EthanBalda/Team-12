@@ -14,7 +14,7 @@ export interface View extends ScreenView{
  * Screen types for navigation
  *
  * - "createWorld": CreateWorld screen
- * 
+ *
  */
 export type Screen =
 	| { type: "createWorld" }
