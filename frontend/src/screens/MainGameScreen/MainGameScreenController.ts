@@ -46,13 +46,31 @@ export class MainGameScreenController extends ScreenController {
   }
 
   private handleEndYear(): void {
+    // Save the city's stats before advancing the year.
+    const previousStats = this.model.getStats();
+
+    // Advance the year and apply the yearly changes.
     this.model.endYear();
 
+    // Get the updated stats after advancing the year.
     const stats = this.model.getStats();
+
+    // Calculate how much each stat changed.
+    const populationChange = stats.population - previousStats.population;
+    const moneyChange = stats.money - previousStats.money;
+    const pollutionChange = stats.pollution - previousStats.pollution;
+
+    // Update the displayed stats and year.
     this.view.updateStats(stats);
     this.view.updateYear(stats.year);
-    this.view.showMessage(`Welcome to Year ${stats.year}!`);
-  }
+
+    // Show the player a summary of the year's changes.
+    this.view.showMessage(
+        `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
+        `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
+        `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
+    );
+}
 
   startGame(): void {
     this.model = new MainGameScreenModel();
