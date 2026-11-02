@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type { View } from "../../types.ts";
-import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
+import { STAGE_WIDTH} from "../../constants.ts";
 
 export class ResultScreenView implements View {
   private group: Konva.Group;
