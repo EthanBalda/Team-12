@@ -3,6 +3,7 @@ import type { ScreenSwitcher, Screen } from "./types.ts";
 import { CreateWorldScreenController } from "./screens/CreateWorldScreen/CreateWorldScreenController.ts";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
+import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 
 /**
  * Main Application - Coordinates all screens
@@ -21,6 +22,7 @@ class App implements ScreenSwitcher {
 
 	private createWorldController: CreateWorldScreenController;	
     private mainGameController: MainGameScreenController;	
+	private miniGameController: MiniGameScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -38,7 +40,11 @@ class App implements ScreenSwitcher {
 		// Each controller manages a Model, View, and handles user interactions
 		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
 		this.mainGameController = new MainGameScreenController(this);
-
+		this.miniGameController = new MiniGameScreenController(
+			this,
+			(result) => this.mainGameController.applyMinigameResult(result),
+		);
+		this.layer.add(this.miniGameController.getView().getGroup());
 
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
@@ -64,11 +70,12 @@ class App implements ScreenSwitcher {
 	 *
 	 * This pattern ensures only one screen is visible at a time.
 	 */
+
 	switchToScreen(screen: Screen): void {
 		// Hide all screens first by setting their Groups to invisible
 		this.createWorldController.hide();
 		this.mainGameController.hide();
-
+		this.miniGameController.hide();
 		
 
 		// Show the requested screen based on the screen type
@@ -78,6 +85,12 @@ class App implements ScreenSwitcher {
 				break;
             case "mainGame":
 				this.mainGameController.startGame();
+				break;
+			case "miniGame":
+				this.miniGameController.play(screen.id);
+				break;
+			case "resumeGame":
+				this.mainGameController.show();
 				break;
 		}
 	}

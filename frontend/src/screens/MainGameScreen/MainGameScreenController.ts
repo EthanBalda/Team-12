@@ -6,6 +6,7 @@ import {
   type BuildingType,
 } from "./MainGameScreenModel.ts";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
+import type { MinigameResult } from "../../minigames/types.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
@@ -21,6 +22,7 @@ export class MainGameScreenController extends ScreenController {
     this.view = new MainGameScreenView(
       (type) => this.handleBuild(type),
       () => this.handleEndYear(),
+      () => this.screenSwitcher.switchToScreen({ type: "miniGame", id: "test" })
     );
 
     this.view.updateStats(this.model.getStats());
@@ -37,6 +39,12 @@ export class MainGameScreenController extends ScreenController {
     this.view.updateStats(this.model.getStats());
   }
 
+  applyMinigameResult(result: MinigameResult): void {
+    this.model.applyDelta(result.delta);
+    this.view.updateStats(this.model.getStats());
+    this.view.showMessage(result.summary);
+  }
+
   private handleEndYear(): void {
     this.model.endYear();
 
@@ -50,6 +58,11 @@ export class MainGameScreenController extends ScreenController {
     this.model = new MainGameScreenModel();
     this.view.updateStats(this.model.getStats());
     this.view.show();
+  }
+
+  endGame(): void {
+    //temorary to ensure type script checker runs without error this should be changed to a end game screen
+    this.screenSwitcher.switchToScreen({type: "mainGame"});
   }
 
   getView(): MainGameScreenView {

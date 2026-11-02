@@ -1,5 +1,19 @@
 # Re-Planet
 
+## Running the application
+You need to start both the frontend and backend in order to run the application. Start by following instructions to start the frontend first. Then start the backend.
+
+Or you this for quickstart assuming you have env variables setup.
+```bash
+cd frontend
+npm i
+npm run dev
+
+cd ../backend
+npm i
+npm run dev
+```
+
 ## Frontend
 
 ### Libraries and Stuff
@@ -8,6 +22,7 @@
 - Konva
 
 ### Project Structure
+```text
 frontend/
 ├── public/
 │   └── bg.svg                                    # the background image
@@ -28,6 +43,7 @@ frontend/
 ├── index.html                                    # the html content
 ├── tsconfig.json                                 # typeScript configuration
 └── package.json                                  # dependencies and scripts
+```
 
 ### Getting Started
 
