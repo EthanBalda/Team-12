@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MainGameScreenController } from "../../screens/MainGameScreen/MainGameScreenController";
 import { MainGameScreenModel } from "../../screens/MainGameScreen/MainGameScreenModel";
 import { MainGameScreenView } from "../../screens/MainGameScreen/MainGameScreenView";
-import { WeatherEventScreenController } from "../../screens/WeatherEventScreenController";
-import { WeatherEventScreenView } from "../../screens/WeatherEventScreenView";
+import { WeatherEventScreenController } from "../../screens/WeatherEventScreen/WeatherEventScreenController";
+import { WeatherEventScreenView } from "../../screens/WeatherEventScreen/WeatherEventScreenView";
 import { floodEvent } from "../../weather/WeatherEvent";
 
 // Overlay rectangles need no canvas rendering in these controller tests.
@@ -13,7 +13,7 @@ vi.mock("konva", async (importOriginal) => {
   return { default: { ...actual, Rect: actual.Group } };
 });
 
-vi.mock("../../screens/WeatherEventScreenView", () => ({
+vi.mock("../../screens/WeatherEventScreen/WeatherEventScreenView", () => ({
   WeatherEventScreenView: vi.fn(function () {
     const group = new Konva.Group();
     return {

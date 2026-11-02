@@ -3,7 +3,7 @@ import { ScreenController } from "../../types.ts";
 import type { ScreenSwitcher } from "../../types.ts";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
 import { floodEvent } from "../../weather/WeatherEvent";
-import { WeatherEventScreenController } from "../WeatherEventScreenController";
+import { WeatherEventScreenController } from "../WeatherEventScreen/WeatherEventScreenController";
 import {
   DISTRICTS,
   MainGameScreenModel,

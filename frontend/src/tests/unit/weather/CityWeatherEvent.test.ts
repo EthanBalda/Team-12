@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { MainGameScreenModel } from "../screens/MainGameScreen/MainGameScreenModel";
-import { floodEvent } from "./WeatherEvent";
-import { CityWeatherEvent } from "./CityWeatherEvent";
+import { MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
+import { floodEvent } from "../../../weather/WeatherEvent";
+import { CityWeatherEvent } from "../../../weather/CityWeatherEvent";
 
 describe("CityWeatherEvent", () => {
   it("deducts preparation costs from the actual city budget", () => {

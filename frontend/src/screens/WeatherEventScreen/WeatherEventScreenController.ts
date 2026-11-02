@@ -1,12 +1,12 @@
-import type { WeatherEvent } from "../weather/WeatherEvent";
+import type { WeatherEvent } from "../../weather/WeatherEvent";
 import {
   CityWeatherEvent,
   type WeatherResolution,
-} from "../weather/CityWeatherEvent";
+} from "../../weather/CityWeatherEvent";
 import {
   MainGameScreenModel,
   type District,
-} from "./MainGameScreen/MainGameScreenModel";
+} from "../MainGameScreen/MainGameScreenModel";
 import { WeatherEventScreenView } from "./WeatherEventScreenView";
 
 export class WeatherEventScreenController {
