@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MainGameScreenModel,
   type BuildingType,
-} from "./MainGameScreenModel";
+} from "../../../screens/MainGameScreen/MainGameScreenModel";
 
 describe("MainGameScreenModel", () => {
   it("assigns the correct health to each building type", () => {
