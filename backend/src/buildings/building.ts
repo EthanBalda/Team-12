@@ -20,9 +20,9 @@ Run and pass tests, debug failures and manually check tier progression
 */
 
 import Konva from "konva";
-import type { ScreenSwitcher, Screen } from "./types.ts";
-import { compareScreenController } from "./compareScreenController.ts";
-import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
+import type { ScreenSwitcher, Screen } from "./types";
+import { compareScreenController } from "./compareScreenController";
+import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants";
 
 /**
  * Main Application - Coordinates all screens

@@ -1,7 +1,7 @@
 import Konva from "konva";
-import type { View } from "./types.ts";
-import type { Build } from "./compareScreenModel.ts";
-import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
+import type { View } from "./types";
+import type { Build } from "./compareScreenModel";
+import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants";
 
 const PANEL_WIDTH = 500;
 const PANEL_HEIGHT = 620;
