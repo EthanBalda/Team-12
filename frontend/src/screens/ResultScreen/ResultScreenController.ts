@@ -18,12 +18,12 @@ export class ResultScreenController extends ScreenController{
     }
 
     private handleContinue(): void{
-        this.screenSwitcher.switchToScreen({type: "mainGame"});
+        this.screenSwitcher.switchToScreen({type: "resumeGame"});
 
     }
 
     private handleNewGame(): void{
-        this.screenSwitcher.switchToScreen({type: "createWorld"})
+        this.screenSwitcher.switchToScreen({type: "mainGame"})
     }
 
     showResult(success: boolean): void {
