@@ -54,6 +54,7 @@ class App implements ScreenSwitcher {
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
 		this.layer.add(this.mainGameController.getView().getGroup());
+		this.layer.add(this.resultScreenController.getView().getGroup());
 
         
 		
@@ -98,7 +99,7 @@ class App implements ScreenSwitcher {
 				this.mainGameController.show();
 				break;
 			case "result":
-				this.resultScreenController.show();
+				this.resultScreenController.showResult(screen.success);
 				break;
 		}
 	}

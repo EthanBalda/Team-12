@@ -298,13 +298,13 @@ private addButton(
 
 
   show(): void {
-    this.success_group.show();
-    this.success_group.getLayer()?.draw();
+    this.group.show();
+    this.group.getLayer()?.draw();
   }
 
   hide(): void {
-    this.success_group.hide();
-    this.success_group.getLayer()?.draw();
+    this.group.hide();
+    this.group.getLayer()?.draw();
   }
 
   show_result(is_success: boolean): void{
