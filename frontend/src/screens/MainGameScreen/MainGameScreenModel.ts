@@ -1,3 +1,4 @@
+import type { StatDelta } from "../../minigames/types.ts";
 export type BuildingType =
   | "park"
   | "housing"
@@ -184,6 +185,13 @@ export class MainGameScreenModel {
       affectedBuildings,
       destroyedBuildings,
     };
+  }
+
+  // On Minigame completion
+  applyDelta(delta: StatDelta): void {
+    this.money += delta.money ?? 0;
+    this.population += delta.population ?? 0;
+    this.pollution = Math.min(100, Math.max(0, this.pollution + (delta.pollution ?? 0)));
   }
 
   endYear(): void {

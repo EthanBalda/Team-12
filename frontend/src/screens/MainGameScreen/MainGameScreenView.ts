@@ -52,15 +52,18 @@ export class MainGameScreenView implements View {
     fill: "#14265d",
   });
 
+  private onMinigame: () => void;
   constructor(
     onBuild: (type: BuildingType, district: District) => void,
     onEndYear: () => void,
+    onMinigame: () => void,
   ) {
     this.group = new Konva.Group({ visible: false });
     this.statsGroup = new Konva.Group();
     this.modalGroup = new Konva.Group({ visible: false });
 	this.onBuild = onBuild;
     this.onEndYear = onEndYear;
+    this.onMinigame = onMinigame;
 
 
     //simple background color
@@ -188,6 +191,17 @@ export class MainGameScreenView implements View {
     );
 
     this.renderBuildings();
+
+    this.addButton(
+      this.group,
+      "Minigame",
+      STAGE_WIDTH / 2 - 90,
+      STAGE_HEIGHT - 85,
+      180,
+      55,
+      "#8a5a9b",
+      () => this.onMinigame(),
+    );
 
     this.createBuildModal();
     this.group.add(this.modalGroup);

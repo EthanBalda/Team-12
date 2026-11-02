@@ -11,23 +11,47 @@ import {
   type District,
 } from "./MainGameScreenModel.ts";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
+import type { MinigameResult } from "../../minigames/types.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
   private readonly view: MainGameScreenView;
   private weatherOverlay: Konva.Group | null = null;
 
-  constructor(_screenSwitcher: ScreenSwitcher) {
+  private readonly screenSwitcher: ScreenSwitcher;
+
+  constructor(screenSwitcher: ScreenSwitcher) {
     super();
+    this.screenSwitcher = screenSwitcher;
 
     this.model = new MainGameScreenModel();
 
     this.view = new MainGameScreenView(
       (type, district) => this.handleBuild(type, district),
       () => this.handleEndYear(),
+      () => {
+        if (this.weatherOverlay === null) {
+          this.screenSwitcher.switchToScreen({ type: "miniGame", id: "test" });
+        }
+      },
     );
 
     this.refreshView();
+  }
+
+  applyMinigameResult(result: MinigameResult): void {
+    if (this.weatherOverlay !== null) {
+      return;
+    }
+    this.model.applyDelta(result.delta);
+    this.refreshView();
+    this.view.showMessage(result.summary);
+  }
+
+  endGame(): void {
+    if (this.weatherOverlay === null) {
+      this.screenSwitcher.switchToScreen({ type: "mainGame" });
+    }
   }
 
   getView(): MainGameScreenView {
