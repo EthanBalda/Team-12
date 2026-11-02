@@ -4,6 +4,8 @@ import { CreateWorldScreenController } from "./screens/CreateWorldScreen/CreateW
 import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
+import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
+
 
 /**
  * Main Application - Coordinates all screens
@@ -23,6 +25,7 @@ class App implements ScreenSwitcher {
 	private createWorldController: CreateWorldScreenController;	
     private mainGameController: MainGameScreenController;	
 	private miniGameController: MiniGameScreenController;
+	private resultScreenController: ResultScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -45,6 +48,8 @@ class App implements ScreenSwitcher {
 			(result) => this.mainGameController.applyMinigameResult(result),
 		);
 		this.layer.add(this.miniGameController.getView().getGroup());
+		this.resultScreenController = new ResultScreenController(this);
+
 
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
@@ -52,13 +57,12 @@ class App implements ScreenSwitcher {
 
         
 		
-
 		// Draw the layer (render everything to the canvas)
 		this.layer.draw();
 
 		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
 		this.createWorldController.getView().show();
-
+		
 	}
 
 	/**
@@ -76,6 +80,7 @@ class App implements ScreenSwitcher {
 		this.createWorldController.hide();
 		this.mainGameController.hide();
 		this.miniGameController.hide();
+		this.resultScreenController.hide();
 		
 
 		// Show the requested screen based on the screen type
@@ -91,6 +96,9 @@ class App implements ScreenSwitcher {
 				break;
 			case "resumeGame":
 				this.mainGameController.show();
+				break;
+			case "result":
+				this.resultScreenController.show();
 				break;
 		}
 	}
