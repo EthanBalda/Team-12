@@ -29,14 +29,14 @@ frontend/
 ├── src/
 │   ├── screens/
 │   │   ├── CreateWorldScreen/                    # the create a new world screen stuff
-│   │   │   ├── CreateWorldScreen.css 
-│   │   │   ├── CreateWorldScreenController.ts 
-│   │   │   ├── CreateWorldScreenModel.ts 
-│   │   │   └── CreateWorldScreenView.ts 
+│   │   │   ├── CreateWorldScreen.css
+│   │   │   ├── CreateWorldScreenController.ts
+│   │   │   ├── CreateWorldScreenModel.ts
+│   │   │   └── CreateWorldScreenView.ts
 │   │   └── MainGameScreen/ # main game screen
-│   │       ├── MainGameScreenController.ts 
-│   │       ├── MainGameScreenModel.ts 
-│   │       └── MainGameScreenView.ts 
+│   │       ├── MainGameScreenController.ts
+│   │       ├── MainGameScreenModel.ts
+│   │       └── MainGameScreenView.ts
 │   ├── constants.ts                              # constants
 │   ├── main.ts                                   # main game implementation (stage, layer, etc with Konva also the screenSwitcher)
 │   ├── types.ts                                  # types
@@ -79,7 +79,7 @@ frontend/
 ### Libraries and Stuff
 
 - TypeScript
-- Express 
+- Express
 - Neon PostgreSQL
 - Prisma ORM
 
@@ -135,4 +135,3 @@ backend/
    ```bash
    npm run dev
    ```
-

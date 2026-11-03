@@ -14,13 +14,17 @@ export interface View extends ScreenView{
  * Screen types for navigation
  *
  * - "createWorld": CreateWorld screen
- * 
+ *
  */
 export type Screen =
 	| { type: "createWorld" }
     | { type: "mainGame" }
 	| { type: "miniGame"; id: MinigameId }
+	| { type: "resumeGame"}
+	| { type: "result"; success: boolean}
+	| { type: "comparison"}	
 	| { type: "resumeGame"};
+
 
 export abstract class ScreenController {
 	abstract getView(): ScreenView;
