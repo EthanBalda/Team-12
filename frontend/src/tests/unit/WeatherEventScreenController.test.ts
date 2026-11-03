@@ -128,7 +128,7 @@ describe("weather controller integration", () => {
     ]);
     expect(view.updateYear).toHaveBeenLastCalledWith(2);
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
-    expect(view.showMessage).toHaveBeenCalledTimes(1);
+    expect(view.showMessage).toHaveBeenCalledTimes(2);
 
     minigame();
     expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "test" });

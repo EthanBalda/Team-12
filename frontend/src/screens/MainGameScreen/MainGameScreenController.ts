@@ -43,6 +43,7 @@ export class MainGameScreenController extends ScreenController {
     if (this.weatherOverlay !== null) {
       return;
     }
+
     this.model.applyDelta(result.delta);
     this.refreshView();
     this.view.showMessage(result.summary);
@@ -87,12 +88,32 @@ export class MainGameScreenController extends ScreenController {
       return;
     }
 
+    // Save the city's stats before advancing the year.
+    const previousStats = this.model.getStats();
+
+    // Advance the year and apply the yearly changes.
     this.model.endYear();
+
+    // Get the updated stats after advancing the year.
+    const stats = this.model.getStats();
+
+    // Calculate how much each stat changed.
+    const populationChange = stats.population - previousStats.population;
+    const moneyChange = stats.money - previousStats.money;
+    const pollutionChange = stats.pollution - previousStats.pollution;
+
+    // Update the displayed stats, year, and buildings.
     this.refreshView();
 
+    // Show the player a summary of the year's changes.
+    this.view.showMessage(
+      `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
+      `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
+      `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
+    );
+
     // Annual floods rotate through districts, starting with north.
-    const districtIndex =
-      (this.model.getStats().year - 2) % DISTRICTS.length;
+    const districtIndex = (stats.year - 2) % DISTRICTS.length;
     const district = DISTRICTS[districtIndex]!;
 
     this.openWeather(district);
