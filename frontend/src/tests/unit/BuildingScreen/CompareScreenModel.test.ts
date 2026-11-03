@@ -39,6 +39,14 @@ describe("compareScreenModel", () => {
       expect(new Set(names).size).toBe(names.length);
     });
 
+    it("has tiers numbered 1..max with no gaps", () => {
+      const tiers = new Set(allBuilds.map((b) => b.tier));
+
+      for (let tier = 1; tier <= maxTier; tier++) {
+        expect(tiers.has(tier)).toBe(true);
+      }
+    });
+
     it("has at least two buildings in every tier so a pair can be picked", () => {
       for (let tier = 1; tier <= maxTier; tier++) {
         expect(allBuilds.filter((b) => b.tier === tier).length)

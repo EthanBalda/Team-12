@@ -66,13 +66,13 @@ class App implements ScreenSwitcher {
 		this.layer.draw();
 
 		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
-		this.createWorldController.getView().show();
+		//this.createWorldController.getView().show();
 		
 
 
 		//TODO in Sprint 2: Now the only way to show comparison screen is through this. Will be integrated with buttons in main screen for cohesion.
-		//this.switchToScreen({ type: "comparison" });
-		//this.layer.draw();
+		this.switchToScreen({ type: "comparison" });
+		this.layer.draw();
 
 	}
 
