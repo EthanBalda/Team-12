@@ -5,7 +5,6 @@ import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
-
 import { compareScreenController } from "./screens/BuildingScreen/CompareScreenController.ts";
 
 /**
@@ -112,6 +111,7 @@ class App implements ScreenSwitcher {
 				break;
 			case "result":
 				this.resultScreenController.showResult(screen.success);
+				break;
 			case "comparison":
 				this.buildingController.show();
 				break;
