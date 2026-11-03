@@ -1,7 +1,7 @@
-import { ScreenController } from "./types";
-import type { ScreenSwitcher } from "./types";
-import { compareScreenModel, type Build } from "./compareScreenModel";
-import { compareScreenView } from "./compareScreenView";
+import { ScreenController } from "../../types";
+import type { ScreenSwitcher } from "../../types";
+import { compareScreenModel, type Build } from "./CompareScreenModel";
+import { compareScreenView } from "./CompareScreenView";
 
 /**
  * compareScreenController - Handles interactions necessary for comparison
