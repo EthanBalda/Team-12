@@ -5,7 +5,7 @@ import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
-
+import { compareScreenController } from "./screens/BuildingScreen/CompareScreenController.ts";
 
 /**
  * Main Application - Coordinates all screens
@@ -26,6 +26,7 @@ class App implements ScreenSwitcher {
     private mainGameController: MainGameScreenController;	
 	private miniGameController: MiniGameScreenController;
 	private resultScreenController: ResultScreenController;
+	private buildingController: compareScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -56,14 +57,23 @@ class App implements ScreenSwitcher {
 		this.layer.add(this.mainGameController.getView().getGroup());
 		this.layer.add(this.resultScreenController.getView().getGroup());
 
-        
+        this.buildingController = new compareScreenController(this, (build) => {
+			console.log("Selected ", build);
+		});
+		this.layer.add(this.buildingController.getView().getGroup());
 		
 		// Draw the layer (render everything to the canvas)
 		this.layer.draw();
 
 		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
-		this.createWorldController.getView().show();
+		//this.createWorldController.getView().show();
 		
+
+
+		//TODO in Sprint 2: Now the only way to show comparison screen is through this. Will be integrated with buttons in main screen for cohesion.
+		this.switchToScreen({ type: "comparison" });
+		this.layer.draw();
+
 	}
 
 	/**
@@ -82,6 +92,7 @@ class App implements ScreenSwitcher {
 		this.mainGameController.hide();
 		this.miniGameController.hide();
 		this.resultScreenController.hide();
+		this.buildingController.hide();
 		
 
 		// Show the requested screen based on the screen type
@@ -100,6 +111,9 @@ class App implements ScreenSwitcher {
 				break;
 			case "result":
 				this.resultScreenController.showResult(screen.success);
+				break;
+			case "comparison":
+				this.buildingController.show();
 				break;
 		}
 	}

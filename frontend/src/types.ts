@@ -21,7 +21,10 @@ export type Screen =
     | { type: "mainGame" }
 	| { type: "miniGame"; id: MinigameId }
 	| { type: "resumeGame"}
-	| {type: "result"; success: boolean};
+	| { type: "result"; success: boolean}
+	| { type: "comparison"}	
+	| { type: "resumeGame"};
+
 
 export abstract class ScreenController {
 	abstract getView(): ScreenView;
