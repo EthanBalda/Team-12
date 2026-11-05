@@ -1,7 +1,13 @@
-import type { CityState } from "./cityState.js";
+export interface WorldState{
+    year: number;
+    money: number;
+    happiness: number;
+    population: number;
+    pollution: number;
+}
 
-// Represents how much each city statistic changed during one year.
-export interface CityChanges {
+// Represents how much each world statistic changed during one year.
+export interface WorldChanges {
   money: number;
   happiness: number;
   population: number;
@@ -15,11 +21,11 @@ export interface YearSummary {
   year: number;
 
   // The city's statistics before advancing the year.
-  previousState: CityState;
+  previousState: WorldState;
 
   // The city's statistics after advancing the year.
-  currentState: CityState;
+  currentState: WorldState;
 
   // The difference between the old and new statistics.
-  changes: CityChanges;
+  changes: WorldChanges;
 }

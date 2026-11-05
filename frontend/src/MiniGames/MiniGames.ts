@@ -1,24 +1,24 @@
 import Konva from "konva";
 import type { IFrame } from "konva/lib/types";
-import type { MinigameContext, MinigameResult } from "./types.ts";
+import type { MiniGameContext, MiniGameResult } from "./types.ts";
 
 /**
- * Base class for all minigames.
+ * Base class for all MiniGames.
  *
  * Subclasses implement `title` and `setup()`, draw into `this.ctx.group`,
  * and call `this.finish(result)` once when the game ends. Timers, animations,
  * and window listeners created through the helpers below are cleaned up
  * automatically by `destroy()`.
  */
-export abstract class Minigame {
+export abstract class MiniGame {
     abstract readonly title: string;
 
-    protected ctx!: MinigameContext;
+    protected ctx!: MiniGameContext;
     private finished = false;
     private cleanups: (() => void)[] = [];
 
     /** Called by the host. Subclasses override setup(), not this. */
-    start(ctx: MinigameContext): void {
+    start(ctx: MiniGameContext): void {
         this.ctx = ctx;
         this.finished = false;
         this.cleanups = [];
@@ -30,7 +30,7 @@ export abstract class Minigame {
     protected abstract setup(): void;
 
     /** Report the result to the host. Ignored after the first call. */
-    protected finish(result: MinigameResult): void {
+    protected finish(result: MiniGameResult): void {
         if (this.finished) return;
         this.finished = true;
         this.ctx.finish(result);

@@ -2,7 +2,7 @@ import Konva from "konva";
 import { ScreenController } from "../../types.ts";
 import type { ScreenSwitcher } from "../../types.ts";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
-import { floodEvent } from "../../weather/WeatherEvent";
+import { floodEvent } from "../../Weather/WeatherEvent.ts";
 import { WeatherEventScreenController } from "../WeatherEventScreen/WeatherEventScreenController";
 import {
   DISTRICTS,
@@ -11,7 +11,7 @@ import {
   type District,
 } from "./MainGameScreenModel.ts";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
-import type { MinigameResult } from "../../minigames/types.ts";
+import type { MiniGameResult } from "../../MiniGames/types.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
@@ -39,7 +39,7 @@ export class MainGameScreenController extends ScreenController {
     this.refreshView();
   }
 
-  applyMinigameResult(result: MinigameResult): void {
+  applyMiniGameResult(result: MiniGameResult): void {
     if (this.weatherOverlay !== null) {
       return;
     }

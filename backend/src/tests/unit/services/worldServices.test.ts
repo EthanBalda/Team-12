@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createWorld } from "../../services/worldServices";
-import { hashPassword } from "../../libs/bcrypt";
-import { getWorldByWorldId, insertWorld } from "../../repositories/worldRepository";
-import { AppError } from "../../middleware/errorHandler";
+import { createWorld } from "../../../services/worldServices";
+import { hashPassword } from "../../../libs/bcrypt";
+import { getWorldByWorldId, insertWorld } from "../../../repositories/worldRepository";
+import { AppError } from "../../../middleware/errorHandler";
 
-vi.mock("../../libs/bcrypt", () => ({
+vi.mock("../../../libs/bcrypt", () => ({
     hashPassword: vi.fn()
 }));
 
-vi.mock("../../repositories/worldRepository", () => ({
+vi.mock("../../../repositories/worldRepository", () => ({
     getWorldByWorldId: vi.fn(),
     insertWorld: vi.fn()
 }));

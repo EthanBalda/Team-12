@@ -5,7 +5,7 @@ import { STAGE_WIDTH, STAGE_HEIGHT } from "./constants.ts";
 import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScreenController.ts";
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
-import { compareScreenController } from "./screens/BuildingScreen/CompareScreenController.ts";
+import { compareScreenController } from "./screens/CompareScreen/CompareScreenController.ts";
 
 /**
  * Main Application - Coordinates all screens
@@ -46,7 +46,7 @@ class App implements ScreenSwitcher {
 		this.mainGameController = new MainGameScreenController(this);
 		this.miniGameController = new MiniGameScreenController(
 			this,
-			(result) => this.mainGameController.applyMinigameResult(result),
+			(result) => this.mainGameController.applyMiniGameResult(result),
 		);
 		this.layer.add(this.miniGameController.getView().getGroup());
 		this.resultScreenController = new ResultScreenController(this);
@@ -70,8 +70,7 @@ class App implements ScreenSwitcher {
 		
 
 
-		//TODO in Sprint 2: Now the only way to show comparison screen is through this. Will be integrated with buttons in main screen for cohesion.
-		this.switchToScreen({ type: "comparison" });
+		this.switchToScreen({ type: "createWorld" });
 		this.layer.draw();
 
 	}
