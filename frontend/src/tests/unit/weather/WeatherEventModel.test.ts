@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { floodEvent } from "../../../weather/WeatherEvent";
-import { WeatherEventModel } from "../../../weather/WeatherEventModel";
+import { floodEvent } from "../../../Weather/WeatherEvent";
+import { WeatherEventModel } from "../../../Weather/WeatherEventModel";
 
 describe("WeatherEventModel", () => {
   it("uses moderate damage below the high-pollution threshold", () => {

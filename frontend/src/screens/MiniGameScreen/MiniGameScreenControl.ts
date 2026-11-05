@@ -1,8 +1,8 @@
 import { ScreenController } from "../../types.ts";
 import type { ScreenSwitcher } from "../../types.ts";
-import { MINIGAMES, type MinigameId } from "../../minigames/registry.ts";
-import type { Minigame } from "../../minigames/Minigames.ts";
-import type { MinigameResult } from "../../minigames/types.ts";
+import { MINIGAMES, type MinigameId } from "../../MiniGames/registry.ts";
+import type { Minigame } from "../../MiniGames/MiniGames.ts";
+import type { MinigameResult } from "../../MiniGames/types.ts";
 import { MiniGameScreenView } from "./MiniGameScreenView.ts";
 
 export class MiniGameScreenController extends ScreenController {

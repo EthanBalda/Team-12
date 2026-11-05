@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { Minigame } from "./Minigames";
+import { Minigame } from "./MiniGames";
 
 export class TestMiniGame extends Minigame{
     readonly title : string = "Test Game"

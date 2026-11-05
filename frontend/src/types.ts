@@ -1,5 +1,5 @@
 import type { Group } from "konva/lib/Group";
-import type { MinigameId } from "./minigames/registry";
+import type { MinigameId } from "./MiniGames/registry";
 
 export interface ScreenView {
   show(): void;

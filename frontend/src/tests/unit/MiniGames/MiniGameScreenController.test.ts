@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MiniGameScreenController } from "../../../screens/MiniGameScreen/MiniGameScreenControl";
-import type { MinigameContext, MinigameResult } from "../../../minigames/types";
+import type { MinigameContext, MinigameResult } from "../../../MiniGames/types";
 import type { Screen } from "../../../types";
 
 const mocks = vi.hoisted(() => ({

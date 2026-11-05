@@ -1,7 +1,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Minigame } from "../../../minigames/Minigames";
-import type { MinigameContext, MinigameResult } from "../../../minigames/types";
+import { Minigame } from "../../../MiniGames/MiniGames";
+import type { MinigameContext, MinigameResult } from "../../../MiniGames/types";
 
 const animation = vi.hoisted(() => ({ start: vi.fn(), stop: vi.fn() }));
 

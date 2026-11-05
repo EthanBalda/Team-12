@@ -1,5 +1,5 @@
-import { Minigame } from "./Minigames";
-import { TestMiniGame } from "./TestMinigame";
+import { Minigame } from "./MiniGames";
+import { TestMiniGame } from "./TestMiniGame";
 
 export const MINIGAMES = {
     test: () => new TestMiniGame(),

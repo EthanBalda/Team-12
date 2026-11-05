@@ -5,7 +5,7 @@ import { MainGameScreenModel } from "../../screens/MainGameScreen/MainGameScreen
 import { MainGameScreenView } from "../../screens/MainGameScreen/MainGameScreenView";
 import { WeatherEventScreenController } from "../../screens/WeatherEventScreen/WeatherEventScreenController";
 import { WeatherEventScreenView } from "../../screens/WeatherEventScreen/WeatherEventScreenView";
-import { floodEvent } from "../../weather/WeatherEvent";
+import { floodEvent } from "../../Weather/WeatherEvent";
 
 // Overlay rectangles need no canvas rendering in these controller tests.
 vi.mock("konva", async (importOriginal) => {

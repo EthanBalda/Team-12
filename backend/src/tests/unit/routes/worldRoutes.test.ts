@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
 
-import worldRouter from "../../routes/worldRoutes";
-import { createWorld } from "../../services/worldServices";
-import { errorHandler, AppError } from "../../middleware/errorHandler";
+import worldRouter from "../../../routes/worldRoutes";
+import { createWorld } from "../../../services/worldServices";
+import { errorHandler, AppError } from "../../../middleware/errorHandler";
 
-vi.mock("../../services/worldServices", () => ({
+vi.mock("../../../services/worldServices", () => ({
     createWorld: vi.fn()
 }));
 
