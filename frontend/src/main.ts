@@ -46,7 +46,7 @@ class App implements ScreenSwitcher {
 		this.mainGameController = new MainGameScreenController(this);
 		this.miniGameController = new MiniGameScreenController(
 			this,
-			(result) => this.mainGameController.applyMinigameResult(result),
+			(result) => this.mainGameController.applyMiniGameResult(result),
 		);
 		this.layer.add(this.miniGameController.getView().getGroup());
 		this.resultScreenController = new ResultScreenController(this);

@@ -11,7 +11,7 @@ import {
   type District,
 } from "./MainGameScreenModel.ts";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
-import type { MinigameResult } from "../../MiniGames/types.ts";
+import type { MiniGameResult } from "../../MiniGames/types.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
@@ -39,7 +39,7 @@ export class MainGameScreenController extends ScreenController {
     this.refreshView();
   }
 
-  applyMinigameResult(result: MinigameResult): void {
+  applyMiniGameResult(result: MiniGameResult): void {
     if (this.weatherOverlay !== null) {
       return;
     }

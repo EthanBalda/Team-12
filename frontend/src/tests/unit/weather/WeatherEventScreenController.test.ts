@@ -1,11 +1,11 @@
 import Konva from "konva";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MainGameScreenController } from "../../screens/MainGameScreen/MainGameScreenController";
-import { MainGameScreenModel } from "../../screens/MainGameScreen/MainGameScreenModel";
-import { MainGameScreenView } from "../../screens/MainGameScreen/MainGameScreenView";
-import { WeatherEventScreenController } from "../../screens/WeatherEventScreen/WeatherEventScreenController";
-import { WeatherEventScreenView } from "../../screens/WeatherEventScreen/WeatherEventScreenView";
-import { floodEvent } from "../../Weather/WeatherEvent";
+import { MainGameScreenController } from "../../../screens/MainGameScreen/MainGameScreenController";
+import { MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
+import { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScreenView";
+import { WeatherEventScreenController } from "../../../screens/WeatherEventScreen/WeatherEventScreenController";
+import { WeatherEventScreenView } from "../../../screens/WeatherEventScreen/WeatherEventScreenView";
+import { floodEvent } from "../../../Weather/WeatherEvent";
 
 // Overlay rectangles need no canvas rendering in these controller tests.
 vi.mock("konva", async (importOriginal) => {
@@ -13,7 +13,7 @@ vi.mock("konva", async (importOriginal) => {
   return { default: { ...actual, Rect: actual.Group } };
 });
 
-vi.mock("../../screens/WeatherEventScreen/WeatherEventScreenView", () => ({
+vi.mock("../../../screens/WeatherEventScreen/WeatherEventScreenView", () => ({
   WeatherEventScreenView: vi.fn(function () {
     const group = new Konva.Group();
     return {
@@ -26,7 +26,7 @@ vi.mock("../../screens/WeatherEventScreen/WeatherEventScreenView", () => ({
   }),
 }));
 
-vi.mock("../../screens/MainGameScreen/MainGameScreenView", () => ({
+vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
   MainGameScreenView: vi.fn(function () {
     const group = new Konva.Group();
     return {
@@ -114,7 +114,7 @@ describe("weather controller integration", () => {
     endYear();
     minigame();
     controller.endGame();
-    controller.applyMinigameResult({ delta: { money: 999 }, summary: "blocked" });
+    controller.applyMiniGameResult({ delta: { money: 999 }, summary: "blocked" });
     expect(switcher.switchToScreen).not.toHaveBeenCalled();
     next();
     next();
@@ -132,7 +132,7 @@ describe("weather controller integration", () => {
 
     minigame();
     expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "test" });
-    controller.applyMinigameResult({ delta: { money: 20000 }, summary: "reward" });
+    controller.applyMiniGameResult({ delta: { money: 20000 }, summary: "reward" });
     controller.show(); // Incoming resumeGame navigation uses show(), not startGame().
     expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget + 20000 }));
     expect(view.updateBuildings).toHaveBeenLastCalledWith(buildings);
