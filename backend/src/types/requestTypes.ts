@@ -3,3 +3,8 @@ export interface CreateWorldRequest {
  password: string,
  name: string,
 }
+
+export interface LoginWorldRequest {
+ worldID: string,
+ password: string,
+}

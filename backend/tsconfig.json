@@ -6,5 +6,7 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true
-  }
+  },
+  "include": ["src/**/*"], // need this so it recognizes exxpres.d.ts
+  "exclude": ["node_modules", "dist"]
 }
