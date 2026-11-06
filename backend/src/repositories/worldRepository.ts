@@ -1,7 +1,7 @@
 import {prisma} from "../libs/db"
 
 export async function getWorldByWorldId(worldId: string){
-    return await prisma.world.findUnique({
+    return await prisma.world.findFirst({
         where: {
             worldID: worldId
         }
