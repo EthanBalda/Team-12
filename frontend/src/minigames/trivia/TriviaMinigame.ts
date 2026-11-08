@@ -89,7 +89,6 @@ export class TriviaMinigame extends Minigame {
         }
     }
 
-    /** Lets the player leave safely if the question set is empty. */
     private renderNoQuestions(): void {
         this.addText("No questions available right now.", 250, 30, COLORS.text, "bold");
         this.addButton("Back to city", (this.ctx.width - 220) / 2, 340, 220, 60, COLORS.next, () => {
