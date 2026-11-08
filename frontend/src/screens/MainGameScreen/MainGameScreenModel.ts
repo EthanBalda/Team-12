@@ -1,4 +1,4 @@
-import type { StatDelta } from "../../minigames/types.ts";
+import type { StatDelta } from "../../MiniGames/types.ts";
 export type BuildingType =
   | "park"
   | "housing"

@@ -1,8 +1,8 @@
-import type { WeatherEvent } from "../../weather/WeatherEvent";
+import type { WeatherEvent } from "../../Weather/WeatherEvent";
 import {
   CityWeatherEvent,
   type WeatherResolution,
-} from "../../weather/CityWeatherEvent";
+} from "../../Weather/CityWeatherEvent";
 import {
   MainGameScreenModel,
   type District,

@@ -1,19 +1,19 @@
 import { ScreenController } from "../../types.ts";
 import type { ScreenSwitcher } from "../../types.ts";
-import { MINIGAMES, type MinigameId } from "../../minigames/registry.ts";
-import type { Minigame } from "../../minigames/Minigames.ts";
-import type { MinigameResult } from "../../minigames/types.ts";
+import { MINIGAMES, type MiniGameId } from "../../MiniGames/registry.ts";
+import type { MiniGame } from "../../MiniGames/MiniGames.ts";
+import type { MiniGameResult } from "../../MiniGames/types.ts";
 import { MiniGameScreenView } from "./MiniGameScreenView.ts";
 
 export class MiniGameScreenController extends ScreenController {
     private view: MiniGameScreenView;
     private screenSwitcher: ScreenSwitcher;
-    private onComplete: (result: MinigameResult) => void;
-    private current: Minigame | null = null;
+    private onComplete: (result: MiniGameResult) => void;
+    private current: MiniGame | null = null;
 
     constructor(
         screenSwitcher: ScreenSwitcher,
-        onComplete: (result: MinigameResult) => void,
+        onComplete: (result: MiniGameResult) => void,
     ) {
         super();
         this.screenSwitcher = screenSwitcher;
@@ -21,7 +21,7 @@ export class MiniGameScreenController extends ScreenController {
         this.view = new MiniGameScreenView(() => this.returnToCity());
     }
 
-    play(id: MinigameId): void {
+    play(id: MiniGameId): void {
         this.stopCurrent();
 
         const game = MINIGAMES[id]();

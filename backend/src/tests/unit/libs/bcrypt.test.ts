@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import bcrypt from "bcryptjs";
-import { hashPassword } from "../../libs/bcrypt";
+import { hashPassword } from "../../../libs/bcrypt";
 
 describe("hashPassword", () => {
     const mockPassword = "password123";

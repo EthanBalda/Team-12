@@ -1,5 +1,5 @@
 import Konva from "konva";
-import type { Preparation } from "../../weather/WeatherEvent";
+import type { Preparation } from "../../Weather/WeatherEvent";
 
 export interface WeatherScreenState {
   budget: number;

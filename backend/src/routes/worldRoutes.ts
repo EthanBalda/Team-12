@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import { createWorld } from '../services/worldServices';
-import { CreateWorldRequest } from '../types/RequestTypes';
+import { CreateWorldRequest } from '../types/requestTypes';
 import { AppError } from '../middleware/errorHandler';
 const worldRouter = express.Router();
 

@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   compareScreenModel,
   type Build,
-} from "../../../screens/BuildingScreen/CompareScreenModel";
-import buildingsData from "../../../screens/BuildingScreen/buildOptions.json";
+} from "../../../screens/CompareScreen/CompareScreenModel";
+import buildingsData from "../../../screens/CompareScreen/buildOptions.json";
 
 const allBuilds = buildingsData as Build[];
 const maxTier = Math.max(...allBuilds.map((b) => b.tier));

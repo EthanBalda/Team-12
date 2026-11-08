@@ -1,7 +1,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Minigame } from "../../../minigames/Minigames";
-import type { MinigameContext, MinigameResult } from "../../../minigames/types";
+import { MiniGame } from "../../../MiniGames/MiniGames";
+import type { MiniGameContext, MiniGameResult } from "../../../MiniGames/types";
 
 const animation = vi.hoisted(() => ({ start: vi.fn(), stop: vi.fn() }));
 
@@ -14,7 +14,7 @@ vi.mock("konva", () => ({
     },
 }));
 
-class FakeMinigame extends Minigame {
+class FakeMiniGame extends MiniGame {
     readonly title = "Fake";
     setupCalls = 0;
 
@@ -22,7 +22,7 @@ class FakeMinigame extends Minigame {
         this.setupCalls++;
     }
 
-    callFinish(result: MinigameResult): void {
+    callFinish(result: MiniGameResult): void {
         this.finish(result);
     }
 
@@ -36,24 +36,24 @@ class FakeMinigame extends Minigame {
 }
 
 describe("Minigame", () => {
-    const result: MinigameResult = { delta: { money: 1000 }, summary: "+$1,000" };
+    const result: MiniGameResult = { delta: { money: 1000 }, summary: "+$1,000" };
 
     let destroyChildren: ReturnType<typeof vi.fn>;
-    let finish: ReturnType<typeof vi.fn<(result: MinigameResult) => void>>;
-    let game: FakeMinigame;
+    let finish: ReturnType<typeof vi.fn<(result: MiniGameResult) => void>>;
+    let game: FakeMiniGame;
 
     beforeEach(() => {
         vi.useFakeTimers();
 
         destroyChildren = vi.fn();
-        finish = vi.fn<(result: MinigameResult) => void>();
-        game = new FakeMinigame();
+        finish = vi.fn<(result: MiniGameResult) => void>();
+        game = new FakeMiniGame();
         game.start({
             group: { destroyChildren, getLayer: () => null },
             width: 1200,
             height: 720,
             finish,
-        } as unknown as MinigameContext);
+        } as unknown as MiniGameContext);
     });
 
     afterEach(() => {
