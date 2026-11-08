@@ -39,7 +39,7 @@ worldRouter.post("/create", async (req, res, next) => {
     }
 });
 
-worldRouter.get("/login", async(req, res, next) => {
+worldRouter.post("/login", async(req, res, next) => {
     try{
         const { worldID, password }: LoginWorldRequest = req.body;
 
