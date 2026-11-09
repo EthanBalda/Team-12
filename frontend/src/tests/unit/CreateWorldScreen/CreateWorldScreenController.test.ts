@@ -73,6 +73,7 @@ describe("CreateWorldScreenController", () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     worldID: "test-world",
                     password: "password123",
