@@ -19,7 +19,10 @@ export class CreateWorldScreenController extends ScreenController {
 		this.view = new CreateWorldScreenView(
 			(worldId, password) => {
 				void this.handleCreateWorld(worldId, password);
-			},
+			}, () => 
+				{
+					this.screenSwitcher.switchToScreen({ type: "loginWorld" });
+				},
 			parent,
 		);
 	}

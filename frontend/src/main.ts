@@ -6,7 +6,8 @@ import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScree
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
 import { compareScreenController } from "./screens/CompareScreen/CompareScreenController.ts";
-
+import { LoginWorldScreenController } from "./screens/LoginWorldScreen/LoginWorldScreenController.ts";
+import { checkLogin } from "./auth.ts";
 /**
  * Main Application - Coordinates all screens
  *
@@ -26,6 +27,7 @@ class App implements ScreenSwitcher {
     private mainGameController: MainGameScreenController;	
 	private miniGameController: MiniGameScreenController;
 	private resultScreenController: ResultScreenController;
+	private loginWorldController: LoginWorldScreenController;
 	private buildingController: compareScreenController;
 
 	constructor(container: string) {
@@ -43,6 +45,7 @@ class App implements ScreenSwitcher {
 		// Initialize all screen controllers
 		// Each controller manages a Model, View, and handles user interactions
 		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
+		this.loginWorldController = new LoginWorldScreenController(this, this.stage.container());
 		this.mainGameController = new MainGameScreenController(this);
 		this.miniGameController = new MiniGameScreenController(
 			this,
@@ -70,9 +73,25 @@ class App implements ScreenSwitcher {
 		
 
 
-		this.switchToScreen({ type: "createWorld" });
-		this.layer.draw();
+		void this.initialize();
 
+	}
+
+	/**
+	 * Intializes the correct screen based on authentication
+	 */
+
+	private async initialize(): Promise<void> {
+    const loggedIn = await checkLogin();
+
+		if(loggedIn){
+			this.switchToScreen({ type: "mainGame" });
+		} 
+		else{
+			this.switchToScreen({ type: "createWorld" });
+		}
+
+    	this.layer.draw();
 	}
 
 	/**
@@ -88,6 +107,7 @@ class App implements ScreenSwitcher {
 	switchToScreen(screen: Screen): void {
 		// Hide all screens first by setting their Groups to invisible
 		this.createWorldController.hide();
+		this.loginWorldController.hide();
 		this.mainGameController.hide();
 		this.miniGameController.hide();
 		this.resultScreenController.hide();
@@ -98,6 +118,9 @@ class App implements ScreenSwitcher {
 		switch (screen.type) {
 			case "createWorld":
 				this.createWorldController.show();
+				break;
+			case "loginWorld":
+				this.loginWorldController.show();
 				break;
             case "mainGame":
 				this.mainGameController.startGame();

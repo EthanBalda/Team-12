@@ -1,0 +1,83 @@
+
+.login-world-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-world-screen .registration-card {
+    width: min(526px, 100%);
+    box-sizing: border-box;
+    padding: 32px;
+    border-radius: 24px;
+    background: rgb(255 255 255 / 90%);
+    box-shadow: 0 12px 32px rgb(20 38 93 / 15%);
+    text-align: center;
+    color: #14265d;
+}
+
+.login-world-screen h1 {
+    margin: 0 0 20px;
+    color: #00b9a5;
+    font-size: clamp(42px, 8vw, 64px);
+}
+
+.login-world-screen h2 {
+    margin-bottom: 12px;
+    font-size: 27px;
+}
+
+.login-world-screen p {
+    line-height: 1.5;
+}
+
+.login-world-screen input,
+.login-world-screen button {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 13px;
+    font: inherit;
+}
+
+.login-world-screen input {
+    border: 1px solid #d3dadf;
+    background: #eef0f1;
+}
+
+.login-world-screen input:focus {
+    outline: 2px solid #00b9a5;
+    outline-offset: 1px;
+}
+
+.login-world-screen button {
+    border: 0;
+    background: #00b9a5;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-world-screen button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.login-world-screen .form-error {
+    color: #c62828;
+    font-size: 14px;
+}
+
+.login-world-screen .registration-prompt {
+    margin-top: 24px;
+    font-size: 13px;
+}
+
+.login-world-screen a {
+    color: #00a997;
+}
