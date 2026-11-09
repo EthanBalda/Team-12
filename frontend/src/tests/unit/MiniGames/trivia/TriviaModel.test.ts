@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TriviaModel } from "../../../../minigames/trivia/TriviaModel";
-import type { Difficulty, TriviaQuestion } from "../../../../minigames/trivia/questions";
+import { TriviaModel } from "../../../../MiniGames/trivia/TriviaModel";
+import type { Difficulty, TriviaQuestion } from "../../../../MiniGames/trivia/questions";
 
 function makeQuestion(difficulty: Difficulty): TriviaQuestion {
     return {

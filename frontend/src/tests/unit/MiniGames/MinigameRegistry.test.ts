@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { MINIGAMES } from "../../../minigames/registry";
-import { TriviaMinigame } from "../../../minigames/trivia/TriviaMinigame";
+import { MINIGAMES } from "../../../MiniGames/registry";
+import { TriviaMinigame } from "../../../MiniGames/trivia/TriviaMinigame";
 
 describe("MINIGAMES", () => {
     it("creates a new trivia game each time it is played", () => {

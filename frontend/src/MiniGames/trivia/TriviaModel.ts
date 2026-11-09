@@ -1,4 +1,4 @@
-import type { MinigameResult } from "../types";
+import type { MiniGameResult } from "../types";
 import type { Difficulty, TriviaQuestion } from "./questions";
 
 export const REWARDS: Record<Difficulty, number> = {
@@ -69,7 +69,7 @@ export class TriviaModel {
         return this.index >= this.questions.length;
     }
 
-    getResult(): MinigameResult {
+    getResult(): MiniGameResult {
         if (this.questions.length === 0) {
             return { delta: {}, summary: "No questions available" };
         }

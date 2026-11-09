@@ -131,7 +131,7 @@ describe("weather controller integration", () => {
     expect(view.showMessage).toHaveBeenCalledTimes(2);
 
     minigame();
-    expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "test" });
+    expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "trivia" });
     controller.applyMiniGameResult({ delta: { money: 20000 }, summary: "reward" });
     controller.show(); // Incoming resumeGame navigation uses show(), not startGame().
     expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget + 20000 }));

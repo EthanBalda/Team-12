@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import Konva from "konva";
-import { TriviaMinigame } from "../../../../minigames/trivia/TriviaMinigame";
-import { TriviaModel } from "../../../../minigames/trivia/TriviaModel";
-import type { MinigameResult } from "../../../../minigames/types";
+import { TriviaMinigame } from "../../../../MiniGames/trivia/TriviaMinigame";
+import { TriviaModel } from "../../../../MiniGames/trivia/TriviaModel";
+import type { MiniGameResult } from "../../../../MiniGames/types";
 
 const QUESTION = {
     question: "Which of these is renewable?",
@@ -14,7 +14,7 @@ const QUESTION = {
 
 function startGame(model: TriviaModel) {
     const group = new Konva.Group();
-    const finish = vi.fn<(result: MinigameResult) => void>();
+    const finish = vi.fn<(result: MiniGameResult) => void>();
     new TriviaMinigame(model).start({ group, width: 1200, height: 720, finish });
     return { group, finish };
 }

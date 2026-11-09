@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TRIVIA_QUESTIONS } from "../../../../minigames/trivia/questions";
-import { QUESTIONS_PER_ROUND } from "../../../../minigames/trivia/TriviaModel";
+import { TRIVIA_QUESTIONS } from "../../../../MiniGames/trivia/questions";
+import { QUESTIONS_PER_ROUND } from "../../../../MiniGames/trivia/TriviaModel";
 
 describe("TRIVIA_QUESTIONS", () => {
     it("has enough questions for a full round", () => {

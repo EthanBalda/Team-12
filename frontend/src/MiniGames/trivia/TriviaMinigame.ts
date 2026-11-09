@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { Minigame } from "../Minigames";
+import { MiniGame } from "../MiniGames";
 import { TRIVIA_QUESTIONS } from "./questions";
 import { TriviaModel, type AnswerFeedback } from "./TriviaModel";
 
@@ -17,7 +17,7 @@ const CHOICE_WIDTH = 460;
 const CHOICE_HEIGHT = 90;
 const CHOICE_GAP = 30;
 
-export class TriviaMinigame extends Minigame {
+export class TriviaMinigame extends MiniGame {
     readonly title = "Environmental Trivia";
     private model: TriviaModel;
 
