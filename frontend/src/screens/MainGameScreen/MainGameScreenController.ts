@@ -31,7 +31,7 @@ export class MainGameScreenController extends ScreenController {
       () => this.handleEndYear(),
       () => {
         if (this.weatherOverlay === null) {
-          this.screenSwitcher.switchToScreen({ type: "miniGame", id: "test" });
+          this.screenSwitcher.switchToScreen({ type: "miniGame", id: "sorting" });
         }
       },
     );
