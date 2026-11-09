@@ -8,6 +8,7 @@ import { ResultScreenController } from "./screens/ResultScreen/ResultScreenContr
 import { compareScreenController } from "./screens/CompareScreen/CompareScreenController.ts";
 import { LoginWorldScreenController } from "./screens/LoginWorldScreen/LoginWorldScreenController.ts";
 import { checkLogin } from "./auth.ts";
+import { LoadingScreenController } from "./screens/LoadingScreen/LoadingScreenController.ts";
 /**
  * Main Application - Coordinates all screens
  *
@@ -29,6 +30,7 @@ class App implements ScreenSwitcher {
 	private resultScreenController: ResultScreenController;
 	private loginWorldController: LoginWorldScreenController;
 	private compareScreenController: compareScreenController;
+	private loadingController: LoadingScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -53,7 +55,7 @@ class App implements ScreenSwitcher {
 		);
 		this.layer.add(this.miniGameController.getView().getGroup());
 		this.resultScreenController = new ResultScreenController(this);
-
+		this.loadingController = new LoadingScreenController();
 
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
@@ -64,6 +66,7 @@ class App implements ScreenSwitcher {
 			console.log("Selected ", build);
 		});
 		this.layer.add(this.compareScreenController.getView().getGroup());
+		this.layer.add(this.loadingController.getView().getGroup());
 		
 		// Draw the layer (render everything to the canvas)
 		this.layer.draw();
@@ -72,9 +75,6 @@ class App implements ScreenSwitcher {
 		
 		
 		void this.initialize();
-		// this.switchToScreen({ type: "createWorld" });
-		// this.layer.draw();
-
 	}
 
 	/**
@@ -82,15 +82,15 @@ class App implements ScreenSwitcher {
 	 */
 
 	private async initialize(): Promise<void> {
-		console.log("intiialize")
-    const loggedIn = await checkLogin();
-		console.log("checking logged in")
+		
+		this.switchToScreen({ type: "loading" });
+		
+    	const loggedIn = await checkLogin();
+
 		if(loggedIn){
-			console.log("Logged in so main game")
 			this.switchToScreen({ type: "mainGame" });
 		} 
 		else{
-			console.log("Not logged in so create world game")
 			this.switchToScreen({ type: "createWorld" });
 		}
 
@@ -115,6 +115,7 @@ class App implements ScreenSwitcher {
 		this.miniGameController.hide();
 		this.resultScreenController.hide();
 		this.compareScreenController.getView().hide();
+		this.loadingController.hide();
 		
 
 		// Show the requested screen based on the screen type
@@ -140,6 +141,9 @@ class App implements ScreenSwitcher {
 			case "comparison":
 				this.compareScreenController.show();
 				break;
+			case "loading":
+    			this.loadingController.show();
+    			break;
 		}
 	}
 }

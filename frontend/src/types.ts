@@ -24,7 +24,8 @@ export type Screen =
 	| { type: "resumeGame"}
 	| { type: "result"; success: boolean}
 	| { type: "comparison"}	
-	| { type: "resumeGame"};
+	| { type: "resumeGame"}
+	| { type: "loading"};
 
 
 export abstract class ScreenController {
