@@ -1,10 +1,10 @@
-import { Minigame } from "./Minigames";
-import { TestMiniGame } from "./TestMinigame";
+import { MiniGame } from "./MiniGames";
+import { TestMiniGame } from "./TestMiniGame";
 import { TriviaMinigame } from "./trivia/TriviaMinigame";
 
 export const MINIGAMES = {
     test: () => new TestMiniGame(),
-    trivia: () => new TriviaMinigame    (),
-} satisfies Record<string, () => Minigame>;
+    trivia: () => new TriviaMinigame(),
+} satisfies Record<string, () => MiniGame>;
 
-export type MinigameId = keyof typeof MINIGAMES;
+export type MiniGameId = keyof typeof MINIGAMES;

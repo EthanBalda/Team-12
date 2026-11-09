@@ -1,18 +1,18 @@
-import type { CityState } from "./cityState.js";
-import type { YearSummary } from "./yearSummary.js";
+import type { WorldState } from "../types/worldTypes";
+import type { YearSummary } from "../types/worldTypes";
 
-// Compares the city's statistics before and after advancing a year.
+// Compares the world's statistics before and after advancing a year.
 // Returns a summary showing how each statistic changed.
 export function calculateYearSummary(
-  previousState: CityState,
-  currentState: CityState
+  previousState: WorldState,
+  currentState: WorldState
 ): YearSummary {
 
   return {
     // The year the player has advanced to.
     year: currentState.year,
 
-    // Save the city's statistics before and after the year changed.
+    // Save the world's statistics before and after the year changed.
     previousState: { ...previousState },
     currentState: { ...currentState },
 

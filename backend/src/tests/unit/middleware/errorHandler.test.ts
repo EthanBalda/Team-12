@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
-import { AppError, errorHandler } from "../../middleware/errorHandler";
+import { AppError, errorHandler } from "../../../middleware/errorHandler";
 
 describe("AppError", () => {
     it("should create an error with the correct status code and message", () => {

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { prisma } from "../../libs/db";
-import { getWorldByWorldId, insertWorld } from "../../repositories/worldRepository";
+import { prisma } from "../../../libs/db";
+import { getWorldByWorldId, insertWorld } from "../../../repositories/worldRepository";
 
-vi.mock("../../libs/db", () => ({
+vi.mock("../../../libs/db", () => ({
     prisma: {
         world: {
             findFirst: vi.fn(),

@@ -1,7 +1,7 @@
 import Konva from "konva";
-import { Minigame } from "./Minigames";
+import { MiniGame } from "./MiniGames";
 
-export class TestMiniGame extends Minigame{
+export class TestMiniGame extends MiniGame{
     readonly title : string = "Test Game"
 
     protected setup(): void {

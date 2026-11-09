@@ -1,16 +1,16 @@
 
 import { describe, it, expect } from "vitest";
-import { calculateYearSummary } from "./calculateYearSummary.js";
-import type { CityState } from "./cityState.js";
+import { calculateYearSummary } from "../../../services/calculateYearSummary";
+import type { WorldState } from "../../../types/worldTypes";
 
 // Group together tests for the yearly summary function.
 describe("calculateYearSummary", () => {
 
-  // Test that the function correctly calculates changes in city statistics.
-  it("should calculate the differences between two city states", () => {
+  // Test that the function correctly calculates changes in world statistics.
+  it("should calculate the differences between two world states", () => {
 
-    // The city's statistics before advancing the year.
-    const previousState: CityState = {
+    // The world's statistics before advancing the year.
+    const previousState: WorldState = {
       year: 1,
       money: 1000,
       happiness: 50,
@@ -18,9 +18,9 @@ describe("calculateYearSummary", () => {
       pollution: 20,
     };
 
-    // The city's statistics after advancing the year.
+    // The world's statistics after advancing the year.
     // These are sample values, not actual building calculations.
-    const currentState: CityState = {
+    const currentState: WorldState = {
       year: 2,
       money: 1200,
       happiness: 55,
@@ -28,7 +28,7 @@ describe("calculateYearSummary", () => {
       pollution: 15,
     };
 
-    // Generate a summary comparing the two city states.
+    // Generate a summary comparing the two world states.
     const summary = calculateYearSummary(previousState, currentState);
 
     // Check that the summary shows the correct year.

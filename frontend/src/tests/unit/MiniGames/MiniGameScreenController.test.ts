@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MiniGameScreenController } from "../../../screens/MiniGameScreen/MiniGameScreenControl";
-import type { MinigameContext, MinigameResult } from "../../../minigames/types";
+import type { MiniGameContext, MiniGameResult } from "../../../MiniGames/types";
 import type { Screen } from "../../../types";
 
 const mocks = vi.hoisted(() => ({
@@ -25,19 +25,19 @@ vi.mock("../../../screens/MiniGameScreen/MiniGameScreenView", () => ({
     },
 }));
 
-vi.mock("../../../minigames/registry", () => ({
+vi.mock("../../../MiniGames/registry", () => ({
     MINIGAMES: { test: () => mocks.createGame() },
 }));
 
 function makeGame() {
-    return { title: "Fake", start: vi.fn<(ctx: MinigameContext) => void>(), destroy: vi.fn() };
+    return { title: "Fake", start: vi.fn<(ctx: MiniGameContext) => void>(), destroy: vi.fn() };
 }
 
 describe("MiniGameScreenController", () => {
     const gameArea = { name: "game area" };
-    const result: MinigameResult = { delta: { money: 1000 }, summary: "+$1,000" };
+    const result: MiniGameResult = { delta: { money: 1000 }, summary: "+$1,000" };
 
-    let onComplete: ReturnType<typeof vi.fn<(result: MinigameResult) => void>>;
+    let onComplete: ReturnType<typeof vi.fn<(result: MiniGameResult) => void>>;
     let switchToScreen: ReturnType<typeof vi.fn<(screen: Screen) => void>>;
     let controller: MiniGameScreenController;
     let game: ReturnType<typeof makeGame>;
@@ -49,12 +49,12 @@ describe("MiniGameScreenController", () => {
         game = makeGame();
         mocks.createGame.mockReturnValue(game);
 
-        onComplete = vi.fn<(result: MinigameResult) => void>();
+        onComplete = vi.fn<(result: MiniGameResult) => void>();
         switchToScreen = vi.fn<(screen: Screen) => void>(() => controller.hide());
         controller = new MiniGameScreenController({ switchToScreen }, onComplete);
     });
 
-    it("shows the screen and starts the minigame in the game area", () => {
+    it("shows the screen and starts the MiniGame in the game area", () => {
         controller.play("test");
 
         expect(mocks.view.setTitle).toHaveBeenCalledExactlyOnceWith("Fake");
@@ -64,7 +64,7 @@ describe("MiniGameScreenController", () => {
         );
     });
 
-    it("destroys a running minigame before starting another", () => {
+    it("destroys a running MiniGame before starting another", () => {
         const secondGame = makeGame();
         controller.play("test");
         mocks.createGame.mockReturnValue(secondGame);
@@ -75,7 +75,7 @@ describe("MiniGameScreenController", () => {
         expect(secondGame.start).toHaveBeenCalledOnce();
     });
 
-    it("sends the result to the city and resumes it when a minigame finishes", () => {
+    it("sends the result to the city and resumes it when a MiniGame finishes", () => {
         controller.play("test");
 
         game.start.mock.calls[0]![0].finish(result);
