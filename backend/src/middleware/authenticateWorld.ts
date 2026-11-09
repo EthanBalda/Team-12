@@ -24,7 +24,7 @@ export function authenticateWorld(
     const worldToken = req.cookies?.world_token;
 
     if(!worldToken){
-        return new AppError(401, "Authentication required");
+        return next(new AppError(401, "Authentication required"));
     }
 
     // verify the jwt token

@@ -28,7 +28,7 @@ class App implements ScreenSwitcher {
 	private miniGameController: MiniGameScreenController;
 	private resultScreenController: ResultScreenController;
 	private loginWorldController: LoginWorldScreenController;
-	private buildingController: compareScreenController;
+	private compareScreenController: compareScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -60,20 +60,20 @@ class App implements ScreenSwitcher {
 		this.layer.add(this.mainGameController.getView().getGroup());
 		this.layer.add(this.resultScreenController.getView().getGroup());
 
-        this.buildingController = new compareScreenController(this, (build) => {
+        this.compareScreenController = new compareScreenController(this, (build) => {
 			console.log("Selected ", build);
 		});
-		this.layer.add(this.buildingController.getView().getGroup());
+		this.layer.add(this.compareScreenController.getView().getGroup());
 		
 		// Draw the layer (render everything to the canvas)
 		this.layer.draw();
 
 		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
-		//this.createWorldController.getView().show();
 		
-
-
+		
 		void this.initialize();
+		// this.switchToScreen({ type: "createWorld" });
+		// this.layer.draw();
 
 	}
 
@@ -82,12 +82,15 @@ class App implements ScreenSwitcher {
 	 */
 
 	private async initialize(): Promise<void> {
+		console.log("intiialize")
     const loggedIn = await checkLogin();
-
+		console.log("checking logged in")
 		if(loggedIn){
+			console.log("Logged in so main game")
 			this.switchToScreen({ type: "mainGame" });
 		} 
 		else{
+			console.log("Not logged in so create world game")
 			this.switchToScreen({ type: "createWorld" });
 		}
 
@@ -111,7 +114,7 @@ class App implements ScreenSwitcher {
 		this.mainGameController.hide();
 		this.miniGameController.hide();
 		this.resultScreenController.hide();
-		this.buildingController.hide();
+		this.compareScreenController.getView().hide();
 		
 
 		// Show the requested screen based on the screen type
@@ -135,7 +138,7 @@ class App implements ScreenSwitcher {
 				this.resultScreenController.showResult(screen.success);
 				break;
 			case "comparison":
-				this.buildingController.show();
+				this.compareScreenController.show();
 				break;
 		}
 	}

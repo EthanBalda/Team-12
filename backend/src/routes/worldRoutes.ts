@@ -3,6 +3,7 @@ import { createWorld, loginWorld } from '../services/worldServices';
 import { CreateWorldRequest, LoginWorldRequest } from '../types/requestTypes';
 import { AppError } from '../middleware/errorHandler';
 import { generateWorldToken } from '../libs/jwt';
+import { authenticateWorld } from '../middleware/authenticateWorld';
 // import { authenticateWorld } from '../middleware/authenticateWorld';
 
 const worldRouter = express.Router();
@@ -70,6 +71,20 @@ worldRouter.post("/login", async(req, res, next) => {
         next(error);
     }
 });
+
+worldRouter.get("/me", authenticateWorld, async(req, res, next) => {
+    
+    try{
+        return res.status(200).json({
+            success: true,
+            worldID: req.worldID,
+        });
+    } catch (error) {
+        next(error);
+    }
+
+});
+
 // every other endpoint other than login and register should use the authenticateWorld like this:
 // worldRouter.get("/stats", authenticateWorld, async(req, res, next) => {
 
