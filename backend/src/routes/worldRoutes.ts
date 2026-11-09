@@ -28,6 +28,17 @@ worldRouter.post("/create", async (req, res, next) => {
         }
 
         const world = await createWorld(worldID, password, name);
+
+        const token = generateWorldToken(world.worldID);
+
+        // attach jwt as http only cookie
+        res.cookie("world_token", token, {
+            httpOnly: true,
+            secure: false, // we are never going to be hosting this anywhere so it should be fine
+            sameSite: "lax",
+            maxAge: 7*24*60*60, // like 7 days should be good
+        });
+        
         const { passwordHash, ...safeWorld } = world; // removes passwordHash from the response object
 
         return res.status(201).json({

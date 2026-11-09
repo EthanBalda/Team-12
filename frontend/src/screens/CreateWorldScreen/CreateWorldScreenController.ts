@@ -45,6 +45,7 @@ export class CreateWorldScreenController extends ScreenController {
 		try {
 			const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/create`, {
 			method: "POST",
+			credentials: "include",
 			headers: {
 				"Content-Type": "application/json",
 			},
