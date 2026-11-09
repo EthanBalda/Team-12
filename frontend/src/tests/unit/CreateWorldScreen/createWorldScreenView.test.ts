@@ -5,12 +5,13 @@ describe("CreateWorldScreenView", () => {
     let parent: HTMLDivElement;
     let onSubmit: (worldId: string, password: string) => void;
     let view: CreateWorldScreenView;
+    let onLogin: () => void;
 
     beforeEach(() => {
         parent = document.createElement("div");
         onSubmit = vi.fn<(worldId: string, password: string) => void>();
-
-        view = new CreateWorldScreenView(onSubmit, parent);
+        onLogin = vi.fn();
+        view = new CreateWorldScreenView(onSubmit, onLogin, parent);
     });
 
     it("renders the create world screen", () => {
