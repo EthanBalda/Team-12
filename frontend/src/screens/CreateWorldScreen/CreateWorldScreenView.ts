@@ -5,13 +5,16 @@ export class CreateWorldScreenView implements ScreenView{
 	private root: HTMLDivElement;
     private onSubmit: (worldId: string, password: string) => void;
     private parent: HTMLElement;
+	private onLogin: () => void;
 
 
 	constructor(
 		onSubmit: (worldId: string, password: string) => void,
+		onLogin: () => void,
 		parent: HTMLElement,
 	) {
         this.onSubmit = onSubmit;
+		this.onLogin = onLogin;
         this.parent = parent;
 
 		this.root = document.createElement("div");
@@ -62,6 +65,13 @@ export class CreateWorldScreenView implements ScreenView{
 			const password = String(data.get("password") ?? "");
 
 			this.onSubmit(worldId, password);
+		});
+
+		const loginLink = this.root.querySelector(".login-link")!;
+
+		loginLink.addEventListener("click", (event) => {
+			event.preventDefault();
+			this.onLogin();
 		});
 	}
 

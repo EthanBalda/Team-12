@@ -19,7 +19,10 @@ export class CreateWorldScreenController extends ScreenController {
 		this.view = new CreateWorldScreenView(
 			(worldId, password) => {
 				void this.handleCreateWorld(worldId, password);
-			},
+			}, () => 
+				{
+					this.screenSwitcher.switchToScreen({ type: "loginWorld" });
+				},
 			parent,
 		);
 	}
@@ -42,6 +45,7 @@ export class CreateWorldScreenController extends ScreenController {
 		try {
 			const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/create`, {
 			method: "POST",
+			credentials: "include",
 			headers: {
 				"Content-Type": "application/json",
 			},

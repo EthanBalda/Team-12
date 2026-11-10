@@ -6,7 +6,9 @@ import { MainGameScreenController } from "./screens/MainGameScreen/MainGameScree
 import { MiniGameScreenController } from "./screens/MiniGameScreen/MiniGameScreenControl.ts";
 import { ResultScreenController } from "./screens/ResultScreen/ResultScreenController.ts";
 import { compareScreenController } from "./screens/CompareScreen/CompareScreenController.ts";
-
+import { LoginWorldScreenController } from "./screens/LoginWorldScreen/LoginWorldScreenController.ts";
+import { checkLogin } from "./auth.ts";
+import { LoadingScreenController } from "./screens/LoadingScreen/LoadingScreenController.ts";
 /**
  * Main Application - Coordinates all screens
  *
@@ -26,7 +28,9 @@ class App implements ScreenSwitcher {
     private mainGameController: MainGameScreenController;	
 	private miniGameController: MiniGameScreenController;
 	private resultScreenController: ResultScreenController;
-	private buildingController: compareScreenController;
+	private loginWorldController: LoginWorldScreenController;
+	private compareScreenController: compareScreenController;
+	private loadingController: LoadingScreenController;
 
 	constructor(container: string) {
 		// Initialize Konva stage (the main canvas)
@@ -43,6 +47,7 @@ class App implements ScreenSwitcher {
 		// Initialize all screen controllers
 		// Each controller manages a Model, View, and handles user interactions
 		this.createWorldController = new CreateWorldScreenController(this, this.stage.container());
+		this.loginWorldController = new LoginWorldScreenController(this, this.stage.container());
 		this.mainGameController = new MainGameScreenController(this);
 		this.miniGameController = new MiniGameScreenController(
 			this,
@@ -50,29 +55,46 @@ class App implements ScreenSwitcher {
 		);
 		this.layer.add(this.miniGameController.getView().getGroup());
 		this.resultScreenController = new ResultScreenController(this);
-
+		this.loadingController = new LoadingScreenController();
 
 		// Add all screen groups to the layer
 		// All screens exist simultaneously but only one is visible at a time
 		this.layer.add(this.mainGameController.getView().getGroup());
 		this.layer.add(this.resultScreenController.getView().getGroup());
 
-        this.buildingController = new compareScreenController(this, (build) => {
+        this.compareScreenController = new compareScreenController(this, (build) => {
 			console.log("Selected ", build);
 		});
-		this.layer.add(this.buildingController.getView().getGroup());
+		this.layer.add(this.compareScreenController.getView().getGroup());
+		this.layer.add(this.loadingController.getView().getGroup());
 		
 		// Draw the layer (render everything to the canvas)
 		this.layer.draw();
 
 		// Start with create world screen visible for now (we might need another screen with like options to create, resume, or view instructions)
-		//this.createWorldController.getView().show();
 		
+		
+		void this.initialize();
+	}
 
+	/**
+	 * Intializes the correct screen based on authentication
+	 */
 
-		this.switchToScreen({ type: "createWorld" });
-		this.layer.draw();
+	private async initialize(): Promise<void> {
+		
+		this.switchToScreen({ type: "loading" });
+		
+    	const loggedIn = await checkLogin();
 
+		if(loggedIn){
+			this.switchToScreen({ type: "mainGame" });
+		} 
+		else{
+			this.switchToScreen({ type: "createWorld" });
+		}
+
+    	this.layer.draw();
 	}
 
 	/**
@@ -88,16 +110,21 @@ class App implements ScreenSwitcher {
 	switchToScreen(screen: Screen): void {
 		// Hide all screens first by setting their Groups to invisible
 		this.createWorldController.hide();
+		this.loginWorldController.hide();
 		this.mainGameController.hide();
 		this.miniGameController.hide();
 		this.resultScreenController.hide();
-		this.buildingController.hide();
+		this.compareScreenController.getView().hide();
+		this.loadingController.hide();
 		
 
 		// Show the requested screen based on the screen type
 		switch (screen.type) {
 			case "createWorld":
 				this.createWorldController.show();
+				break;
+			case "loginWorld":
+				this.loginWorldController.show();
 				break;
             case "mainGame":
 				this.mainGameController.startGame();
@@ -112,8 +139,11 @@ class App implements ScreenSwitcher {
 				this.resultScreenController.showResult(screen.success);
 				break;
 			case "comparison":
-				this.buildingController.show();
+				this.compareScreenController.show();
 				break;
+			case "loading":
+    			this.loadingController.show();
+    			break;
 		}
 	}
 }
