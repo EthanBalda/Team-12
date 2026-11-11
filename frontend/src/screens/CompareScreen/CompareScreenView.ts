@@ -26,7 +26,7 @@ export class compareScreenView implements View {
 	private rightPanel: Panel;
 	private messageText: Konva.Text;
 
-	constructor(onSelectLeft: () => void, onSelectRight: () => void) {
+	constructor(onSelectLeft: () => void, onSelectRight: () => void, onCancel: () => void) {
 		this.group = new Konva.Group({ visible: true });
 
 		// Title (top of screen)
@@ -64,6 +64,26 @@ export class compareScreenView implements View {
 			align: "center",
 		});
 		this.group.add(this.messageText);
+
+		const cancel = new Konva.Group({ x: 30, y: 30 });
+			cancel.add(
+				new Konva.Rect({ width: 120, height: 40, fill: "#59636e", cornerRadius: 10 }),
+				new Konva.Text({
+				width: 120,
+				height: 40,
+				text: "Cancel",
+				fontSize: 18,
+				fontStyle: "bold",
+				fontFamily: "Arial",
+				fill: "white",
+				align: "center",
+				verticalAlign: "middle", 
+				listening: false,
+				}),
+			);
+			cancel.on("click tap", onCancel);
+			this.group.add(cancel);
+
 	}
 
 	/**
@@ -166,9 +186,8 @@ export class compareScreenView implements View {
 		panel.nameText.text(build.name);
 		panel.statsText.text(
 			`Cost: ${build.money}\n` +
-				`Happiness: ${build.happiness}\n` +
-				`Pollution: ${build.pollution}\n` +
-				`Tier: ${build.tier}`,
+			`Pollution: ${build.pollution}\n` +
+			`Tier: ${build.tier}`,
 		);
 	}
 

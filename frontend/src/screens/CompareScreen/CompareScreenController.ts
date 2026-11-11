@@ -10,11 +10,12 @@ export class compareScreenController extends ScreenController {
 	private model: compareScreenModel;
 	private view: compareScreenView;
 	protected screenSwitcher: ScreenSwitcher;
-	private onBuildSelected: ((build: Build) => void) | undefined;
+	private onBuildSelected: ((build: Build) => boolean) | undefined;
 
 	constructor(
 		screenSwitcher: ScreenSwitcher,
-		onBuildSelected?: (build: Build) => void,
+		onBuildSelected?: (build: Build) => boolean,
+		onCancel?: () => void,
 	) {
 		super();
 		this.screenSwitcher = screenSwitcher;
@@ -23,6 +24,7 @@ export class compareScreenController extends ScreenController {
 		this.view = new compareScreenView(
 			() => this.handleSelect("left"),
 			() => this.handleSelect("right"),
+			() => onCancel?.(),
 		);
 	}
 
@@ -42,17 +44,21 @@ export class compareScreenController extends ScreenController {
 		);
 	}
 
+	reset(): void {
+		this.model.reset();
+		}
+
+	setTier(tier: number): void {
+		this.model.setTier(tier);
+	}
 
 	private handleSelect(side: "left" | "right"): void {
-	const build = 
-		side === "left" ? this.model.getLeftBuild() : this.model.getRightBuild();
-	if (build === null) return;
+		const build =
+			side === "left" ? this.model.getLeftBuild() : this.model.getRightBuild();
+		if (build === null) return;
 
-	this.onBuildSelected?.(build);
-	this.model.advanceTier()
-	this.refreshBuilds();
-	this.view.showSelection(build);
-}
+		this.onBuildSelected?.(build);
+	}
 
 	/**
 	 * Get the view

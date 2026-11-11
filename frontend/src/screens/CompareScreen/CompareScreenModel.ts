@@ -32,17 +32,19 @@ export class compareScreenModel {
 	}
 
 	/**
-	 * Move to the next tier. Returns false if already on the highest tier.
+	 * Move to the next tier.
 	 */
-	advanceTier(): boolean {
+	setTier(tier: number): void {
 		const maxTier = Math.max(...this.buildings.map((b) => b.tier));
-		if (this.currentTier >= maxTier) return false;
-		this.currentTier++;
-		return true;
+		this.currentTier = Math.max(1, Math.min(tier, maxTier));
 	}
 
 	getCurrentTier(): number {
 		return this.currentTier;
+	}
+
+	reset(): void {
+		this.currentTier = 1;
 	}
 
 	/**
