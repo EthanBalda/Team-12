@@ -66,9 +66,12 @@ describe("CityWeatherEvent", () => {
     city.build(getBuild("Factory"), "south");
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
+    expect(event.resolve()).toEqual({
+      district: "north",
+      destroyedBuildingIds: ["building-1"],
+    });
 
     
-
     expect(city.getStats().population).toBe(10450);
 
     expect(city.getBuildings()).toEqual([
