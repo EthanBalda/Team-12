@@ -108,6 +108,8 @@ describe("weather controller integration", () => {
     controller.startGame();
     const view = controller.getView();
     const [build, endYear, minigame] = vi.mocked(MainGameScreenView).mock.calls[0]!;
+    build();
+    build();
     endYear();
     const [,,, purchase, next] = vi.mocked(WeatherEventScreenView).mock.calls[0]!;
     purchase("sandbags");
@@ -115,6 +117,7 @@ describe("weather controller integration", () => {
     const budget = vi.mocked(weatherView.update).mock.lastCall![0].budget;
 
     // Calls arriving behind the overlay must not change or leave the city.
+    build();
     endYear();
     minigame();
     controller.endGame();
