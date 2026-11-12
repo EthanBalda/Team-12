@@ -20,10 +20,6 @@ export async function checkLogin(): Promise<boolean> {
             return false;
         }
 
-        const world: World = await response.json();
-
-        console.log("Authenticated world:", world);
-
         return true;
     } catch (error) {
         console.error("Authentication check failed:", error);

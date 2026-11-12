@@ -16,6 +16,7 @@ export class MainGameScreenView implements View {
   private statsText: Record<string, Konva.Text> = {};
 	private onBuild: (type: BuildingType, district: District) => void;
 	private onEndYear: () => void;
+  private onLogout: () => void;
   private selectedDistrict: District = "north";
   private buildings: CityBuilding[] = [];
   private buildingPage = 0;
@@ -57,6 +58,7 @@ export class MainGameScreenView implements View {
     onBuild: (type: BuildingType, district: District) => void,
     onEndYear: () => void,
     onMinigame: () => void,
+    onLogout: () => void,
   ) {
     this.group = new Konva.Group({ visible: false });
     this.statsGroup = new Konva.Group();
@@ -64,6 +66,7 @@ export class MainGameScreenView implements View {
 	this.onBuild = onBuild;
     this.onEndYear = onEndYear;
     this.onMinigame = onMinigame;
+    this.onLogout = onLogout;
 
 
     //simple background color
@@ -103,10 +106,22 @@ export class MainGameScreenView implements View {
     }));
 
     this.createStatCard("population", "POPULATION", 20);
-    this.createStatCard("money", "MONEY", STAGE_WIDTH / 2 - 120);
-    this.createStatCard("pollution", "POLLUTION", STAGE_WIDTH - 260);
+    this.createStatCard("money", "MONEY", STAGE_WIDTH / 2 - 200);
+    this.createStatCard("pollution", "POLLUTION", STAGE_WIDTH - 400);
 
     this.group.add(this.statsGroup);
+
+    // logout button
+    this.addButton(
+      this.group,
+      "LOGOUT",
+      STAGE_WIDTH - 130,
+      15,
+      110,
+      40,
+      "#dc2626",
+      () => this.onLogout(),
+    );
 
     this.addButton(
       this.group,

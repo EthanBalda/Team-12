@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { ScreenController } from "../../types.ts";
 import type { ScreenSwitcher } from "../../types.ts";
-import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
+import { STAGE_WIDTH, STAGE_HEIGHT, BACKEND_API_ENDPOINT } from "../../constants.ts";
 import { floodEvent } from "../../Weather/WeatherEvent.ts";
 import { WeatherEventScreenController } from "../WeatherEventScreen/WeatherEventScreenController";
 import {
@@ -34,6 +34,23 @@ export class MainGameScreenController extends ScreenController {
           this.screenSwitcher.switchToScreen({ type: "miniGame", id: "trivia" });
         }
       },
+      async () => {
+      try {
+        const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Logout failed");
+        }
+
+        window.location.reload();
+      } catch (error) {
+        console.error("Logout failed:", error);
+        this.view.showMessage("Logout failed. Please try again.");
+      }
+    },
     );
 
     this.refreshView();
