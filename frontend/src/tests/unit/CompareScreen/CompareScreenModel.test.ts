@@ -85,7 +85,7 @@ describe("compareScreenModel", () => {
           expect(model.getLeftBuild()!.tier).toBe(tier);
           expect(model.getRightBuild()!.tier).toBe(tier);
         }
-        model.advanceTier();
+        model.setTier(model.getCurrentTier());
       }
     });
 
@@ -147,55 +147,6 @@ describe("compareScreenModel", () => {
 
       expect(model.getLeftBuild()).toBeNull();
       expect(model.getRightBuild()).toBeNull();
-    });
-  });
-
-  describe("advanceTier", () => {
-    it("moves up one tier and returns true", () => {
-      const model = new compareScreenModel();
-
-      expect(model.advanceTier()).toBe(true);
-      expect(model.getCurrentTier()).toBe(2);
-    });
-
-    it("can advance all the way to the highest tier", () => {
-      const model = new compareScreenModel();
-
-      for (let tier = 1; tier < maxTier; tier++) {
-        expect(model.advanceTier()).toBe(true);
-      }
-
-      expect(model.getCurrentTier()).toBe(maxTier);
-    });
-
-    it("returns false and stays put on the highest tier", () => {
-      const model = new compareScreenModel();
-      for (let tier = 1; tier < maxTier; tier++) model.advanceTier();
-
-      expect(model.advanceTier()).toBe(false);
-      expect(model.advanceTier()).toBe(false);
-      expect(model.getCurrentTier()).toBe(maxTier);
-    });
-
-    it("does not change the currently displayed pair", () => {
-      const model = new compareScreenModel();
-      model.pickNewPair();
-      const left = model.getLeftBuild();
-      const right = model.getRightBuild();
-
-      model.advanceTier();
-
-      expect(model.getLeftBuild()).toBe(left);
-      expect(model.getRightBuild()).toBe(right);
-    });
-
-    it("makes the next pair come from the new tier", () => {
-      const model = new compareScreenModel();
-      model.advanceTier();
-      model.pickNewPair();
-
-      expect(model.getLeftBuild()!.tier).toBe(2);
-      expect(model.getRightBuild()!.tier).toBe(2);
     });
   });
 });

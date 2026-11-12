@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
 import { floodEvent } from "../../../Weather/WeatherEvent";
 import { CityWeatherEvent } from "../../../Weather/CityWeatherEvent";
+import type { Build } from "../../../screens/CompareScreen/CompareScreenModel";
+import buildingsData from "../../../screens/CompareScreen/buildOptions.json";
+
+const getBuild = (name: string): Build => {
+  const found = (buildingsData as Build[]).find((b) => b.name === name);
+  if (!found) throw new Error(`Unknown build: ${name}`);
+  return found;
+};
 
 describe("CityWeatherEvent", () => {
   it("deducts preparation costs from the actual city budget", () => {
@@ -53,9 +61,9 @@ describe("CityWeatherEvent", () => {
 
   it("damages the targeted district and derives population loss from destruction", () => {
     const city = new MainGameScreenModel();
-    city.build("park", "north");
-    city.build("housing", "north");
-    city.build("factory", "south");
+    city.build(getBuild("Park"), "north");
+    city.build(getBuild("Factory"), "north");
+    city.build(getBuild("Factory"), "south");
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
 
@@ -88,7 +96,7 @@ describe("CityWeatherEvent", () => {
 
   it("lets preparations protect buildings and avoid population loss", () => {
     const city = new MainGameScreenModel();
-    city.build("park", "north");
+    city.build(getBuild("Park"), "north");
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
     event.purchasePreparation("sandbags");
@@ -110,7 +118,7 @@ describe("CityWeatherEvent", () => {
     const city = new MainGameScreenModel();
 
     for (let index = 0; index < 5; index++) {
-      city.build("factory", "north");
+      city.build(getBuild("Factory"), "north");
     }
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
@@ -126,7 +134,7 @@ describe("CityWeatherEvent", () => {
 
   it("preserves building damage across separate floods", () => {
     const city = new MainGameScreenModel();
-    city.build("housing", "north");
+    city.build(getBuild("Factory"), "north");
 
     const firstEvent = new CityWeatherEvent(floodEvent, city, "north");
     expect(firstEvent.resolve().populationLost).toBe(0);
@@ -140,7 +148,7 @@ describe("CityWeatherEvent", () => {
 
   it("applies each event only once", () => {
     const city = new MainGameScreenModel();
-    city.build("housing", "north");
+    city.build(getBuild("Factory"), "north");
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
     const result = event.resolve();
@@ -168,7 +176,7 @@ describe("CityWeatherEvent", () => {
 
   it("causes no population loss when the affected district is empty", () => {
     const city = new MainGameScreenModel();
-    city.build("park", "south");
+    city.build(getBuild("Park"), "south");
 
     const event = new CityWeatherEvent(floodEvent, city, "north");
 
