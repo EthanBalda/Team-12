@@ -96,6 +96,19 @@ worldRouter.get("/me", authenticateWorld, async(req, res, next) => {
 
 });
 
+worldRouter.post("/logout", (req: Request, res: Response) => {
+    res.clearCookie("world_token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+    });
+});
+
 // every other endpoint other than login and register should use the authenticateWorld like this:
 // worldRouter.get("/stats", authenticateWorld, async(req, res, next) => {
 
