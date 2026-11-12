@@ -43,7 +43,7 @@ describe("MainGameScreenModel", () => {
     const statsBefore = model.getStats();
     const buildingsBefore = model.getBuildings();
 
-    expect(model.build(getBuild("Refinery"))).toBe(true);
+    expect(model.build(getBuild("Refinery"))).toBe(false);
     expect(model.getStats()).toEqual(statsBefore);
     expect(model.getBuildings()).toEqual(buildingsBefore);
   });

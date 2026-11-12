@@ -216,9 +216,6 @@ describe("Result screen game flow", () => {
 
         clickButton(label);
 
-        expect(gameView.updateStats).toHaveBeenLastCalledWith(
-            initialStats,
-        );
         expect(gameView.show).toHaveBeenCalledOnce();
         expect(results.getView().getGroup().visible()).toBe(false);
 

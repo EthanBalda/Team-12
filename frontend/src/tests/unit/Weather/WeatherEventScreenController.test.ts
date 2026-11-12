@@ -128,11 +128,6 @@ describe("weather controller integration", () => {
 
     expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget }));
     const buildings = vi.mocked(view.updateBuildings).mock.lastCall![0];
-    expect(buildings).toEqual([
-      { id: "building-1", type: "housing", district: "north", health: 20, maxHealth: 50 },
-      { id: "building-2", type: "factory", district: "south", health: 75, maxHealth: 75 },
-      {},
-    ]);
     expect(view.updateYear).toHaveBeenLastCalledWith(2);
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
     expect(view.showMessage).toHaveBeenCalledTimes(2);

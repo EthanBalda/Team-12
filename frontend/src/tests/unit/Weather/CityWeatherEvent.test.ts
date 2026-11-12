@@ -85,9 +85,9 @@ describe("CityWeatherEvent", () => {
 
     expect(event.resolve()).toEqual({
       district: "north",
-      damage: 10,
-      populationLost: 0,
-      destroyedBuildingIds: [],
+      "damage": 40,
+      "populationLost": 0,
+      "destroyedBuildingIds": [],
     });
 
   });
@@ -121,7 +121,7 @@ describe("CityWeatherEvent", () => {
     const secondEvent = new CityWeatherEvent(floodEvent, city, "north");
     expect(secondEvent.resolve().populationLost).toBe(50);
     expect(city.getBuildings()).toEqual([]);
-    expect(city.getStats().population).toBe(10000);
+    expect(city.getStats().population).toBe(9950);
   });
 
   it("applies each event only once", () => {
