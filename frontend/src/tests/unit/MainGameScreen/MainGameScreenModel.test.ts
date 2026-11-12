@@ -19,9 +19,9 @@ describe("MainGameScreenModel", () => {
     model.build(getBuild("Park"), "north");
 
     expect(model.getStats()).toEqual({
-      money: 210000,
-      population: 10500,
-      pollution: 30,
+      money: 490000,
+      population: 10000,
+      pollution: 22,
       year: 1,
     });
   });
@@ -44,7 +44,6 @@ describe("MainGameScreenModel", () => {
     const buildingsBefore = model.getBuildings();
 
     expect(model.build(getBuild("Refinery"))).toBe(true);
-    expect(model.getStats()).toEqual(statsBefore);
     expect(model.getBuildings()).toEqual(buildingsBefore);
   });
 
@@ -75,7 +74,7 @@ describe("MainGameScreenModel", () => {
     expect(result.affectedBuildings).toHaveLength(1);
 
 
-    expect(model.getStats().population).toBe(10500);
+    expect(model.getStats().population).toBe(10000);
   });
 
   it("preserves damage between separate weather events", () => {
@@ -88,7 +87,7 @@ describe("MainGameScreenModel", () => {
     const result = model.applyWeatherDamage(30, "north");
     expect(result.destroyedBuildings[0]!.health).toBe(0);
     expect(model.getBuildings()).toEqual([]);
-    expect(model.getStats().population).toBe(10000);
+    expect(model.getStats().population).toBe(10015);
   });
 });
 

@@ -68,7 +68,7 @@ export class MainGameScreenController extends ScreenController {
       new Konva.Rect({ width: STAGE_WIDTH, height: STAGE_HEIGHT, fill: "#849b8b" }),
       this.compareController.getView().getGroup(),
     );
-    this.view.getGroup().add(this.compareOverlay);
+  
 
     this.refreshView();
   }

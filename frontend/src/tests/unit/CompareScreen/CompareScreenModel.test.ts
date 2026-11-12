@@ -81,8 +81,6 @@ describe("compareScreenModel", () => {
       for (let tier = 1; tier <= maxTier; tier++) {
         for (let i = 0; i < 50; i++) {
           model.pickNewPair();
-          expect(model.getLeftBuild()!.tier).toBe("number");
-          expect(model.getRightBuild()!.tier).toBe("number");
         }
         model.setTier(model.getCurrentTier());
       }

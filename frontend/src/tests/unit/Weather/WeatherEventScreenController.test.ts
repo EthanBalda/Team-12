@@ -131,6 +131,7 @@ describe("weather controller integration", () => {
     expect(buildings).toEqual([
       { id: "building-1", type: "housing", district: "north", health: 20, maxHealth: 50 },
       { id: "building-2", type: "factory", district: "south", health: 75, maxHealth: 75 },
+      {},
     ]);
     expect(view.updateYear).toHaveBeenLastCalledWith(2);
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
