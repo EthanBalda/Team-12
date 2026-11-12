@@ -3,7 +3,6 @@ import Konva from "konva";
 import type { View } from "../../types.ts";
 import {
   DISTRICTS,
-  type BuildingType,
   type CityBuilding,
   type District,
 } from "./MainGameScreenModel.ts";
@@ -14,7 +13,7 @@ export class MainGameScreenView implements View {
   private statsGroup: Konva.Group;
   private modalGroup: Konva.Group;
   private statsText: Record<string, Konva.Text> = {};
-	private onBuild: (type: BuildingType, district: District) => void;
+	private onOpenBuild: () => void;
 	private onEndYear: () => void;
   private onLogout: () => void;
   private selectedDistrict: District = "north";
@@ -55,7 +54,7 @@ export class MainGameScreenView implements View {
 
   private onMinigame: () => void;
   constructor(
-    onBuild: (type: BuildingType, district: District) => void,
+    onOpenBuild: () => void,
     onEndYear: () => void,
     onMinigame: () => void,
     onLogout: () => void,
@@ -63,7 +62,7 @@ export class MainGameScreenView implements View {
     this.group = new Konva.Group({ visible: false });
     this.statsGroup = new Konva.Group();
     this.modalGroup = new Konva.Group({ visible: false });
-	this.onBuild = onBuild;
+	  this.onOpenBuild = onOpenBuild;
     this.onEndYear = onEndYear;
     this.onMinigame = onMinigame;
     this.onLogout = onLogout;
@@ -131,7 +130,7 @@ export class MainGameScreenView implements View {
       180,
       55,
       "#287a55",
-      () => this.showBuildModal(),
+      () => this.onOpenBuild(),
     );
 
     this.addButton(
@@ -218,7 +217,6 @@ export class MainGameScreenView implements View {
       () => this.onMinigame(),
     );
 
-    this.createBuildModal();
     this.group.add(this.modalGroup);
   }
 
@@ -337,111 +335,6 @@ export class MainGameScreenView implements View {
     this.renderBuildings();
   }
 
-  private createBuildModal(): void {
-    this.modalGroup.add(new Konva.Rect({
-      x: 0,
-      y: 0,
-      width: STAGE_WIDTH,
-      height: STAGE_HEIGHT,
-      fill: "black",
-      opacity: 0.6,
-    }));
-
-    const panelWidth = 440;
-    const panelHeight = 470;
-    const panelX = (STAGE_WIDTH - panelWidth) / 2;
-    const panelY = (STAGE_HEIGHT - panelHeight) / 2;
-
-    this.modalGroup.add(new Konva.Rect({
-      x: panelX,
-      y: panelY,
-      width: panelWidth,
-      height: panelHeight,
-      fill: "#ffffff",
-      cornerRadius: 16,
-    }));
-
-    this.modalGroup.add(new Konva.Text({
-      x: panelX + 25,
-      y: panelY + 20,
-      width: panelWidth - 80,
-      text: "Build in Your City",
-      fontSize: 25,
-      fontFamily: "Arial",
-      fontStyle: "bold",
-      fill: "#17232c",
-    }));
-
-    this.addButton(
-      this.modalGroup,
-      "Park — $50,000",
-      panelX + 25,
-      panelY + 75,
-      panelWidth - 50,
-      60,
-      "#287a55",
-      () => this.selectBuilding("park"),
-    );
-
-    this.addButton(
-      this.modalGroup,
-      "Housing — $80,000",
-      panelX + 25,
-      panelY + 150,
-      panelWidth - 50,
-      60,
-      "#477ca8",
-      () => this.selectBuilding("housing"),
-    );
-
-    this.addButton(
-      this.modalGroup,
-      "Factory — $60,000",
-      panelX + 25,
-      panelY + 225,
-      panelWidth - 50,
-      60,
-      "#a66c36",
-      () => this.selectBuilding("factory"),
-    );
-
-    this.addButton(
-      this.modalGroup,
-      "Renewable — $100,000",
-      panelX + 25,
-      panelY + 300,
-      panelWidth - 50,
-      60,
-      "#187568",
-      () => this.selectBuilding("renewable"),
-    );
-
-    this.addButton(
-      this.modalGroup,
-      "Cancel",
-      panelX + 25,
-      panelY + 390,
-      panelWidth - 50,
-      45,
-      "#59636e",
-      () => this.hideBuildModal(),
-    );
-  }
-
-  private selectBuilding(type: BuildingType): void {
-    this.hideBuildModal();
-    this.onBuild(type, this.selectedDistrict);
-  }
-
-  private showBuildModal(): void {
-    this.modalGroup.visible(true);
-    this.group.getLayer()?.draw();
-  }
-
-  private hideBuildModal(): void {
-    this.modalGroup.visible(false);
-    this.group.getLayer()?.draw();
-  }
 
   showMessage(message: string): void {
     const notice = new Konva.Text({

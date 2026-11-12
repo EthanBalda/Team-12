@@ -2,55 +2,48 @@ import buildingsData from "./buildOptions.json";
 
 export type Build = {
 	name: string;
+	type: string;
 	money: number;
-	happiness: number;
+	populationLoss: number;
 	pollution: number;
 	tier: number;
 };
 
 export class compareScreenModel {
 	private buildings: Build[] = buildingsData as Build[];
-	private leftBuild: Build | null = null;
-	private rightBuild: Build | null = null;
 	private currentTier = 1;
+	private choices: (Build | null)[] = [];
+
+	pickNewChoices(): void {
+	const pool = this.buildings.filter((b) => b.tier === this.currentTier);
+
+	// Shuffle a copy, then take the first three (all distinct)
+	const shuffled = [...pool];
+	for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+	}
+
+	this.choices = Array.from({ length: 3 }, (_, i) => shuffled[i] ?? null); // Picks 3 buildings
+	}
+
+	getChoices(): (Build | null)[] {
+	return this.choices;
+	}
 
 	/**
-	 * Pick two different random buildings from the JSON list
+	 * Move to the next tier.
 	 */
-	pickNewPair(): void {
-		const tierBuilds = this.buildings.filter((b) => b.tier === this.currentTier);
-		this.leftBuild = this.pickRandomBuild(tierBuilds);
-		this.rightBuild = this.pickRandomBuild(tierBuilds, this.leftBuild);
-	}
-
-	getLeftBuild(): Build | null {
-		return this.leftBuild;
-	}
-
-	getRightBuild(): Build | null {
-		return this.rightBuild;
-	}
-
-	/**
-	 * Move to the next tier. Returns false if already on the highest tier.
-	 */
-	advanceTier(): boolean {
+	setTier(tier: number): void {
 		const maxTier = Math.max(...this.buildings.map((b) => b.tier));
-		if (this.currentTier >= maxTier) return false;
-		this.currentTier++;
-		return true;
+		this.currentTier = Math.max(1, Math.min(tier, maxTier));
 	}
 
 	getCurrentTier(): number {
 		return this.currentTier;
 	}
 
-	/**
-	 * Pick a random building without the same twice
-	 */
-	private pickRandomBuild(pool: Build[], exclude: Build | null = null): Build | null {
-		const candidates = pool.filter((b) => b.name !== exclude?.name);
-		if (candidates.length === 0) return null;
-		return candidates[Math.floor(Math.random() * candidates.length)];
+	reset(): void {
+		this.currentTier = 1;
 	}
 }

@@ -7,15 +7,18 @@ import { WeatherEventScreenController } from "../WeatherEventScreen/WeatherEvent
 import {
   DISTRICTS,
   MainGameScreenModel,
-  type BuildingType,
   type District,
 } from "./MainGameScreenModel.ts";
+import { compareScreenController } from "../CompareScreen/CompareScreenController";
+import type { Build } from "../CompareScreen/CompareScreenModel";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
 import type { MiniGameResult } from "../../MiniGames/types.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
   private readonly view: MainGameScreenView;
+  private compareController: compareScreenController;
+  private compareOverlay: Konva.Group;
   private weatherOverlay: Konva.Group | null = null;
 
   private readonly screenSwitcher: ScreenSwitcher;
@@ -27,7 +30,7 @@ export class MainGameScreenController extends ScreenController {
     this.model = new MainGameScreenModel();
 
     this.view = new MainGameScreenView(
-      (type, district) => this.handleBuild(type, district),
+      () => this.openCompare(),
       () => this.handleEndYear(),
       () => {
         if (this.weatherOverlay === null) {
@@ -52,6 +55,20 @@ export class MainGameScreenController extends ScreenController {
       }
     },
     );
+
+    
+    this.compareController = new compareScreenController(
+      screenSwitcher,
+      (build) => this.handleCompareSelect(build),
+      () => this.closeCompare(),
+    );
+
+    this.compareOverlay = new Konva.Group({ visible: false });
+    this.compareOverlay.add(
+      new Konva.Rect({ width: STAGE_WIDTH, height: STAGE_HEIGHT, fill: "#849b8b" }),
+      this.compareController.getView().getGroup(),
+    );
+  
 
     this.refreshView();
   }
@@ -80,24 +97,42 @@ export class MainGameScreenController extends ScreenController {
     this.weatherOverlay?.destroy();
     this.weatherOverlay = null;
     this.model = new MainGameScreenModel();
+    this.compareController.reset();
+    this.closeCompare();
     this.refreshView();
     this.view.show();
   }
 
-  private handleBuild(
-    type: BuildingType,
-    district: District,
-  ): void {
-    if (this.weatherOverlay !== null) {
-      return;
+  private compareOverlayAttached = false;
+  private openCompare(): void {
+    if (this.weatherOverlay !== null) return;
+    if (!this.compareOverlayAttached) {
+      this.view.getGroup().add(this.compareOverlay);
+      this.compareOverlayAttached = true;
+    }
+    this.compareOverlay.visible(true);
+    this.compareController.show();
+    this.compareController.updateMoney(this.model.getStats().money);
+    this.view.getGroup().getLayer()?.draw();
+  }
+
+  private closeCompare(): void {
+    this.compareOverlay.visible(false);
+    this.view.getGroup().getLayer()?.draw();
+  }
+
+  private handleCompareSelect(build: Build): boolean {
+    if (this.weatherOverlay !== null) return false;
+
+    if (!this.model.build(build, this.view.getSelectedDistrict())) {
+      this.view.showMessage("Not enough money!"); // stay open so they can pick the other
+      return false;
     }
 
-    if (!this.model.build(type, district)) {
-      this.view.showMessage("Not enough money!");
-      return;
-    }
-
+    this.closeCompare();
     this.refreshView();
+    this.view.showMessage(`Built ${build.name} in ${this.view.getSelectedDistrict().toUpperCase()}`);
+    return true;
   }
 
   private handleEndYear(): void {
@@ -118,6 +153,11 @@ export class MainGameScreenController extends ScreenController {
     const populationChange = stats.population - previousStats.population;
     const moneyChange = stats.money - previousStats.money;
     const pollutionChange = stats.pollution - previousStats.pollution;
+
+    // Advance Building Tier
+    const YEARS_PER_TIER = 2; // Currently increments tier every two years
+    this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
+    this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
 
     // Update the displayed stats, year, and buildings.
     this.refreshView();

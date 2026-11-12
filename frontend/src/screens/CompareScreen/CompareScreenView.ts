@@ -3,18 +3,26 @@ import type { View } from "../../types";
 import type { Build } from "./CompareScreenModel";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants";
 
-const PANEL_WIDTH = 500;
-const PANEL_HEIGHT = 620;
-const PANEL_GAP = 60;
-const PANEL_Y = 100;
-const PANEL_PADDING = 30;
+const CHOICE_COUNT = 3;
+const SIDE_MARGIN = 40;
+const PANEL_GAP = 30;
+const PANEL_WIDTH =
+  (STAGE_WIDTH - SIDE_MARGIN * 2 - PANEL_GAP * (CHOICE_COUNT - 1)) / CHOICE_COUNT;
+const PANEL_HEIGHT = STAGE_HEIGHT-300;
+const PANEL_Y = 130;
+const PANEL_PADDING = 24;
 const BUTTON_WIDTH = 160;
 const BUTTON_HEIGHT = 50;
+
+const IMAGE_SIZE = 160;
+
+const imagePath = (type: string) =>`/${type}.png`;
 
 type Panel = {
 	group: Konva.Group;
 	nameText: Konva.Text;
 	statsText: Konva.Text;
+	image: Konva.Image;
 };
 
 /**
@@ -22,40 +30,51 @@ type Panel = {
  */
 export class compareScreenView implements View {
 	private group: Konva.Group;
-	private leftPanel: Panel;
-	private rightPanel: Panel;
-	private messageText: Konva.Text;
+	private panels: Panel[] = [];
+	//private messageText: Konva.Text;
+	private moneyText: Konva.Text;
 
-	constructor(onSelectLeft: () => void, onSelectRight: () => void) {
+	constructor(onSelect: (index: number) => void, onCancel: () => void) {
 		this.group = new Konva.Group({ visible: true });
 
 		// Title (top of screen)
 		const title = new Konva.Text({
-			x: 0,
-			y: 30,
+			x: 25,
+			y: 25,
 			width: STAGE_WIDTH,
-			text: "Choose Building",
+			text: "Build",
 			fontSize: 32,
 			fontStyle: "bold",
 			fontFamily: "Arial",
 			fill: "Black",
-			align: "center",
 		});
 		this.group.add(title);
 
-		// Two panels + gap are centered on the stage
-		const totalWidth = PANEL_WIDTH * 2 + PANEL_GAP;
-		const leftX = (STAGE_WIDTH - totalWidth) / 2;
-		const rightX = leftX + PANEL_WIDTH + PANEL_GAP;
+		// Current money, centered under the title
+		this.moneyText = new Konva.Text({
+			x: 25,
+			y: 75,
+			width: STAGE_WIDTH,
+			text: "",
+			fontSize: 26, 
+			fontStyle: "bold",
+			fontFamily: "Arial",
+			fill: "#17232c",
+		});
+		this.group.add(this.moneyText);
 
-		this.leftPanel = this.createPanel(leftX, onSelectLeft);
-		this.rightPanel = this.createPanel(rightX, onSelectRight);
-		this.group.add(this.leftPanel.group, this.rightPanel.group);
+		for (let i = 0; i < CHOICE_COUNT; i++) {
+			const x = SIDE_MARGIN + i * (PANEL_WIDTH + PANEL_GAP);
+			const panel = this.createPanel(x, () => onSelect(i));
+			this.panels.push(panel);
+			this.group.add(panel.group);
+		};
 
 		// Feedback message under the panels
+		/*
 		this.messageText = new Konva.Text({
 			x: 0,
-			y: STAGE_HEIGHT - 60,
+			y: STAGE_HEIGHT - 30,
 			width: STAGE_WIDTH,
 			text: "",
 			fontSize: 22,
@@ -63,7 +82,27 @@ export class compareScreenView implements View {
 			fill: "Green",
 			align: "center",
 		});
-		this.group.add(this.messageText);
+		this.group.add(this.messageText);*/
+
+		const cancel = new Konva.Group({ x: STAGE_WIDTH-120-30, y: 30 });
+			cancel.add(
+				new Konva.Rect({ width: 120, height: 40, fill: "#59636e", cornerRadius: 10 }),
+				new Konva.Text({
+				width: 120,
+				height: 40,
+				text: "Cancel",
+				fontSize: 18,
+				fontStyle: "bold",
+				fontFamily: "Arial",
+				fill: "white",
+				align: "center",
+				verticalAlign: "middle", 
+				listening: false,
+				}),
+			);
+			cancel.on("click tap", onCancel);
+			this.group.add(cancel);
+
 	}
 
 	/**
@@ -95,21 +134,20 @@ export class compareScreenView implements View {
 		});
 		panel.add(nameText);
 
-		const divider = new Konva.Line({
-			points: [
-				PANEL_PADDING,
-				PANEL_PADDING + 50,
-				PANEL_WIDTH - PANEL_PADDING,
-				PANEL_PADDING + 50,
-			],
-			stroke: "#999",
-			strokeWidth: 2,
+		const image = new Konva.Image({
+			x: (PANEL_WIDTH - IMAGE_SIZE) / 2,
+			y: PANEL_PADDING + 65,
+			width: IMAGE_SIZE,
+			height: IMAGE_SIZE,
+			image: undefined,
+			visible: false,
 		});
-		panel.add(divider);
+		panel.add(image);
+
 
 		const statsText = new Konva.Text({
 			x: PANEL_PADDING,
-			y: PANEL_PADDING + 70,
+			y: PANEL_PADDING + + IMAGE_SIZE + 80,
 			width: PANEL_WIDTH - PANEL_PADDING * 2,
 			text: "",
 			fontSize: 22,
@@ -153,42 +191,78 @@ export class compareScreenView implements View {
 		button.on("click tap", onSelect);
 		panel.add(button);
 
-		return { group: panel, nameText, statsText };
+		return { group: panel, nameText, statsText, image };
+	}
+
+	private setPanelImage(panel: Panel, build: Build | null): void {
+		// Hide any previous image right away so a stale one never lingers
+		panel.image.visible(false);
+		if (build === null) return;
+
+		const src = imagePath(build.type);
+		const img = new Image();
+
+		img.onload = () => {
+			// Ignore a late load if the panel has moved on to another building
+			if (panel.nameText.text() !== build.name) return;
+			if (img.naturalWidth === 0 || img.naturalHeight === 0) return;
+
+			const scale = Math.min(
+			IMAGE_SIZE / img.naturalWidth,
+			IMAGE_SIZE / img.naturalHeight,
+			);
+			const w = img.naturalWidth * scale;
+			const h = img.naturalHeight * scale;
+
+			panel.image.image(img);
+			panel.image.size({ width: w, height: h });
+			panel.image.position({
+			x: (PANEL_WIDTH - w) / 2,
+			y: PANEL_PADDING + 65 + (IMAGE_SIZE - h) / 2,
+			});
+			panel.image.visible(true);
+			this.group.getLayer()?.batchDraw();
+		};
+
+		img.onerror = () => {
+			console.warn(`Missing image: ${src} (for "${build.name}")`);
+		};
+
+		img.src = src;
 	}
 
 	private renderPanel(panel: Panel, build: Build | null): void {
-		if (build === null) {
-			panel.nameText.text("Unavailable");
-			panel.statsText.text("Stats unavailable");
-			return;
-		}
-
-		panel.nameText.text(build.name);
-		panel.statsText.text(
-			`Cost: ${build.money}\n` +
-				`Happiness: ${build.happiness}\n` +
-				`Pollution: ${build.pollution}\n` +
-				`Tier: ${build.tier}`,
-		);
+	if (build === null) {
+		panel.nameText.text("Unavailable");
+		panel.statsText.text("");
+		return;
 	}
 
-	/**
-	 * Update both panels (null if a build couldn't be loaded)
-	 */
-	updateBuilds(left: Build | null, right: Build | null): void {
-		this.renderPanel(this.leftPanel, left);
-		this.renderPanel(this.rightPanel, right);
-		this.messageText.text("");
+	panel.nameText.text(build.name);
+	this.setPanelImage(panel, build);
+	panel.statsText.text(
+		`Cost: $${(build.money).toLocaleString()}\n` +
+		`Pollution: ${build.pollution}\n` +
+		`Tier: ${build.tier}`,
+	);
+	}
+
+	updateBuilds(builds: (Build | null)[]): void {
+		this.panels.forEach((panel, i) => this.renderPanel(panel, builds[i] ?? null));
+		//this.messageText.text("");
 		this.group.getLayer()?.batchDraw();
 	}
 
-	/**
-	 * Show which building was selected
-	 */
-	showSelection(build: Build): void {
-		this.messageText.text(`Previously Selected: ${build.name}`);
+	updateMoney(money: number): void {
+		this.moneyText.text(`Available funds: $${money.toLocaleString()}`);
 		this.group.getLayer()?.batchDraw();
 	}
+
+	/*showMessage(message: string): void {
+		this.messageText.fill("red");
+		this.messageText.text(message);
+		this.group.getLayer()?.batchDraw();
+	}*/
 
 	/**
 	 * Show the screen

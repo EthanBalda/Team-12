@@ -1,35 +1,37 @@
 [
-{"name": "Fossil-Fuel Power Plant","money": 60, "happiness": 10, "pollution": 60, "tier":1},
-{"name": "Park","money": 10, "happiness": 50, "pollution": -20, "tier":1},
-{"name": "Factory","money": 40, "happiness": 30, "pollution": 40, "tier":1},
-{"name": "Refinery","money": 50, "happiness": 10, "pollution": 50, "tier":1},
+{"name": "Fossil-Fuel Power Plant", "type": "factory", "money": 60000, "pollution": 10, "populationLoss": 100, "tier":1},
+{"name": "Park", "type": "park", "money": 10000, "pollution": -3, "populationLoss": 50, "tier":1},
+{"name": "Factory", "type": "factory", "money": 40000, "pollution": 10, "populationLoss": 200, "tier":1},
+{"name": "Refinery", "type": "factory", "money": 50000, "pollution": 15, "populationLoss": 100, "tier":1},
+{"name": "Small Apartment", "type": "house", "money": 30000, "pollution": 8, "populationLoss": 300, "tier":1},
+
+{"name": "Fossil-Fuel Power Plant II", "type": "factory", "money": 60000, "pollution": 8, "populationLoss": 100, "tier":2},
+{"name": "Park II", "type": "park", "money": 10000, "pollution": -5, "populationLoss": 50, "tier":2},
+{"name": "Factory II", "type": "factory", "money": 45000, "pollution": 8, "populationLoss": 200, "tier":2},
+{"name": "Refinery II", "type": "factory", "money": 55000, "pollution": 12, "populationLoss": 100, "tier":2},
+{"name": "Medium Apartment", "type": "house", "money": 40000, "pollution": 10, "populationLoss": 500, "tier":2},
+
+{"name": "Wind Power Plant", "type": "wind", "money": 80000, "pollution": -1, "populationLoss": 50, "tier":2},
+{"name": "Water Treatment Plant", "type": "factory", "money": 50000, "pollution": -5, "populationLoss": 50, "tier":2},
+{"name": "Office","type": "office","money": 80000, "pollution": 5, "populationLoss": 300, "tier":2},
+{"name": "Steel Mill", "type": "factory", "money": 90000, "pollution": 12, "populationLoss": 200, "tier":2},
 
 
-{"name": "Fossil-Fuel Power Plant II","money": 60, "happiness": 15, "pollution": 50, "tier":2},
-{"name": "Park II","money": 10, "happiness": 55, "pollution": -25, "tier":2},
-{"name": "Factory II","money": 45, "happiness": 35, "pollution": 35, "tier":2},
-{"name": "Refinery II","money": 55, "happiness": 10, "pollution": 45, "tier":2},
 
-{"name": "Wind Power Plant","money": 40, "happiness": 50, "pollution": 20, "tier":2},
-{"name": "Water Treatment Plant","money": 30, "happiness": 15, "pollution": -25, "tier":2},
-{"name": "Office","money": 80, "happiness": 30, "pollution": 20, "tier":2},
-{"name": "Steel Mill", "money": 90, "happiness": 20, "pollution": 80, "tier":2},
+{"name": "Fossil-Fuel Power Plant III", "type": "factory", "money": 60000, "pollution": 6, "populationLoss": 100, "tier":3},
+{"name": "Park III", "type": "park", "money": 10000, "pollution": -10, "populationLoss": 50, "tier":3},
+{"name": "Factory III", "type": "factory", "money": 45000, "pollution": 5, "populationLoss": 200, "tier":3},
+{"name": "Refinery III", "type": "factory", "money": 55000, "pollution": 10, "populationLoss": 100, "tier":3},
+{"name": "High-Rise Apartment", "type": "house", "money": 50000, "pollution": 10, "populationLoss": 700, "tier":3},
 
-
-
-{"name": "Fossil-Fuel Power Plant III","money": 60, "happiness": 15, "pollution": 45, "tier":3},
-{"name": "Park III","money": 10, "happiness": 55, "pollution": -30, "tier":3},
-{"name": "Factory III","money": 45, "happiness": 35, "pollution": 30, "tier":3},
-{"name": "Refinery III","money": 55, "happiness": 10, "pollution": 40, "tier":3},
-
-{"name": "Wind Power Plant II","money": 40, "happiness": 55, "pollution": 15, "tier":3},
-{"name": "Water Treatment Plant II","money": 30, "happiness": 20, "pollution": -30, "tier":3},
-{"name": "Office II","money": 85, "happiness": 30, "pollution": 15, "tier":3},
-{"name": "Steel Mill II", "money": 95, "happiness": 25, "pollution": 70, "tier":3},
+{"name": "Wind Power Plant II", "type": "wind", "money": 80000, "pollution": -3,"populationLoss": 50, "tier":3},
+{"name": "Water Treatment Plant II", "type": "factory", "money": 50000, "pollution": -8, "populationLoss": 50, "tier":3},
+{"name": "Office II", "type": "office","money": 85000, "pollution": 3, "populationLoss": 400, "tier":3},
+{"name": "Steel Mill II", "type": "factory", "money": 95000, "pollution": 10, "populationLoss": 200, "tier":3},
 
 
-{"name": "Solar Farm","money": 60, "happiness": 40, "pollution": 10, "tier":3},
-{"name": "Airport","money": 150, "happiness": 60, "pollution": 60, "tier":3},
-{"name": "Forest Reserve","money": 0, "happiness": 30, "pollution": -40, "tier":3},
-{"name": "Data Center","money": 100, "happiness": 20, "pollution": 50, "tier":3}
+{"name": "Solar Farm", "type": "solar","money": 60000, "pollution": 2, "populationLoss": 10, "tier":3},
+{"name": "Airport", "type": "airport","money": 150000, "pollution": 15, "populationLoss": 400, "tier":3},
+{"name": "Forest Reserve", "type": "park", "money": 20000, "pollution": -10, "populationLoss": 0, "tier":3},
+{"name": "Data Center", "type": "office","money": 100000, "pollution": 10, "populationLoss": 100, "tier":3}
 ]

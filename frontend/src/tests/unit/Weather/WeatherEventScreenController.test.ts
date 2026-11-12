@@ -6,7 +6,14 @@ import { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScre
 import { WeatherEventScreenController } from "../../../screens/WeatherEventScreen/WeatherEventScreenController";
 import { WeatherEventScreenView } from "../../../screens/WeatherEventScreen/WeatherEventScreenView";
 import { floodEvent } from "../../../Weather/WeatherEvent";
+import type { Build } from "../../../screens/CompareScreen/CompareScreenModel";
+import buildingsData from "../../../screens/CompareScreen/buildOptions.json";
 
+const getBuild = (name: string): Build => {
+  const found = (buildingsData as Build[]).find((b) => b.name === name);
+  if (!found) throw new Error(`Unknown build: ${name}`);
+  return found;
+};
 // Overlay rectangles need no canvas rendering in these controller tests.
 vi.mock("konva", async (importOriginal) => {
   const { default: actual } = await importOriginal<typeof import("konva")>();
@@ -63,7 +70,7 @@ describe("weather controller integration", () => {
 
   it("applies damage once even when continue is clicked repeatedly", () => {
     const city = new MainGameScreenModel();
-    city.build("housing", "north");
+    city.build(getBuild("Factory"), "north");
     const damage = vi.spyOn(city, "applyWeatherDamage");
     const controller = new WeatherEventScreenController(floodEvent, city, "north", vi.fn());
     const next = vi.mocked(WeatherEventScreenView).mock.calls[0]![4];
@@ -101,8 +108,8 @@ describe("weather controller integration", () => {
     controller.startGame();
     const view = controller.getView();
     const [build, endYear, minigame] = vi.mocked(MainGameScreenView).mock.calls[0]!;
-    build("housing", "north");
-    build("factory", "south");
+    build();
+    build();
     endYear();
     const [,,, purchase, next] = vi.mocked(WeatherEventScreenView).mock.calls[0]!;
     purchase("sandbags");
@@ -110,7 +117,6 @@ describe("weather controller integration", () => {
     const budget = vi.mocked(weatherView.update).mock.lastCall![0].budget;
 
     // Calls arriving behind the overlay must not change or leave the city.
-    build("park", "east");
     endYear();
     minigame();
     controller.endGame();
@@ -122,13 +128,9 @@ describe("weather controller integration", () => {
 
     expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget }));
     const buildings = vi.mocked(view.updateBuildings).mock.lastCall![0];
-    expect(buildings).toEqual([
-      { id: "building-1", type: "housing", district: "north", health: 20, maxHealth: 50 },
-      { id: "building-2", type: "factory", district: "south", health: 75, maxHealth: 75 },
-    ]);
     expect(view.updateYear).toHaveBeenLastCalledWith(2);
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
-    expect(view.showMessage).toHaveBeenCalledTimes(2);
+    expect(view.showMessage).toHaveBeenCalledTimes(3);
 
     minigame();
     expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "trivia" });

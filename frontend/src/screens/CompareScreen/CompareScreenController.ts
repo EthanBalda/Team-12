@@ -10,49 +10,49 @@ export class compareScreenController extends ScreenController {
 	private model: compareScreenModel;
 	private view: compareScreenView;
 	protected screenSwitcher: ScreenSwitcher;
-	private onBuildSelected: ((build: Build) => void) | undefined;
+	private onBuildSelected: ((build: Build) => boolean) | undefined;
 
 	constructor(
 		screenSwitcher: ScreenSwitcher,
-		onBuildSelected?: (build: Build) => void,
+		onBuildSelected?: (build: Build) => boolean,
+		onCancel?: () => void,
 	) {
 		super();
 		this.screenSwitcher = screenSwitcher;
 		this.onBuildSelected = onBuildSelected;
 		this.model = new compareScreenModel();
 		this.view = new compareScreenView(
-			() => this.handleSelect("left"),
-			() => this.handleSelect("right"),
+			(index) => this.handleSelect(index),
+			() => onCancel?.(),
 		);
 	}
 
-	/**
-	 * Show the screen with a fresh random pair of buildings
-	 */
 	show(): void {
 		super.show();
-		this.refreshBuilds();
+		this.model.pickNewChoices();
+		this.view.updateBuilds(this.model.getChoices());
 	}
 
-	private refreshBuilds(): void {
-		this.model.pickNewPair();
-		this.view.updateBuilds(
-			this.model.getLeftBuild(),
-			this.model.getRightBuild(),
-		);
+	updateMoney(money: number): void {
+		this.view.updateMoney(money);
+	}
+	/*
+	showMessage(message: string): void {
+  		this.view.showMessage(message);
+	}*/
+	private handleSelect(index: number): void {
+		const build = this.model.getChoices()[index];
+		if (!build) return;
+		this.onBuildSelected?.(build);
 	}
 
+	reset(): void {
+		this.model.reset();
+		}
 
-	private handleSelect(side: "left" | "right"): void {
-	const build = 
-		side === "left" ? this.model.getLeftBuild() : this.model.getRightBuild();
-	if (build === null) return;
-
-	this.onBuildSelected?.(build);
-	this.model.advanceTier()
-	this.refreshBuilds();
-	this.view.showSelection(build);
-}
+	setTier(tier: number): void {
+		this.model.setTier(tier);
+	}
 
 	/**
 	 * Get the view

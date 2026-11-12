@@ -1,49 +1,20 @@
 import type { StatDelta } from "../../MiniGames/types.ts";
-export type BuildingType =
-  | "park"
-  | "housing"
-  | "factory"
-  | "renewable";
+import type { Build } from "../CompareScreen/CompareScreenModel";
 
 export const DISTRICTS = ["north", "south", "east", "west"] as const;
 export type District = (typeof DISTRICTS)[number];
 
+export type BuildingType = string;
 export interface CityBuilding {
   id: string;
-  type: BuildingType;
+  type: string;            // holds Build.name
   district: District;
   health: number;
   maxHealth: number;
+  populationLoss: number;  // stored per building now
 }
 
-interface BuildingDefinition {
-  cost: number;
-  maxHealth: number;
-  populationLoss: number;
-}
 
-const BUILDING_DEFINITIONS: Record<BuildingType, BuildingDefinition> = {
-  park: {
-    cost: 50000,
-    maxHealth: 25,
-    populationLoss: 50,
-  },
-  housing: {
-    cost: 80000,
-    maxHealth: 50,
-    populationLoss: 500,
-  },
-  factory: {
-    cost: 60000,
-    maxHealth: 75,
-    populationLoss: 100,
-  },
-  renewable: {
-    cost: 100000, // Provisional price.
-    maxHealth: 100,
-    populationLoss: 150,
-  },
-};
 
 export interface WeatherDamageResult {
   populationLost: number;
@@ -86,43 +57,32 @@ export class MainGameScreenModel {
     return true;
   }
 
-  build(type: BuildingType, district: District = "north"): boolean {
-    this.validateDistrict(district);
-
-    const definition = BUILDING_DEFINITIONS[type];
-
-    if (!this.spendMoney(definition.cost)) {
-      return false;
-    }
-
-    this.buildings.push({
-      id: `building-${this.nextBuildingId}`,
-      type,
-      district,
-      health: definition.maxHealth,
-      maxHealth: definition.maxHealth,
-    });
-    this.nextBuildingId++;
-
-    switch (type) {
-      case "park":
-        this.pollution = Math.max(0, this.pollution - 5);
-        break;
-
-      case "housing":
-        this.population += 500;
-        break;
-
-      case "factory":
-        this.pollution = Math.min(100, this.pollution + 10);
-        break;
-
-      case "renewable":
-        break;
-    }
-
-    return true;
+  getBuildCost(option: Build): number {
+    return option.money;
   }
+
+    build(option: Build, district: District = "north"): boolean {
+      this.validateDistrict(district);
+
+      if (!this.spendMoney(this.getBuildCost(option))) return false;
+
+      const maxHealth = 25 + option.tier * 25;
+      this.buildings.push({
+        id: `building-${this.nextBuildingId}`,
+        type: option.name,
+        district,
+        health: maxHealth,
+        maxHealth,
+        populationLoss: option.populationLoss,
+      });
+      this.nextBuildingId++;
+
+      this.pollution = Math.min(
+        100,
+        Math.max(0, this.pollution + option.pollution),
+      );
+      return true;
+    }
 
   applyWeatherDamage(
     damage: number,
@@ -165,9 +125,7 @@ export class MainGameScreenModel {
     });
 
     const requestedPopulationLoss = destroyedBuildings.reduce(
-      (total, building) =>
-        total + BUILDING_DEFINITIONS[building.type].populationLoss,
-      0,
+      (total, building) => total + building.populationLoss, 0,
     );
 
     const populationLost = Math.min(

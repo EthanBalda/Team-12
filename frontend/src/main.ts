@@ -62,9 +62,7 @@ class App implements ScreenSwitcher {
 		this.layer.add(this.mainGameController.getView().getGroup());
 		this.layer.add(this.resultScreenController.getView().getGroup());
 
-        this.compareScreenController = new compareScreenController(this, (build) => {
-			console.log("Selected ", build);
-		});
+        this.compareScreenController = new compareScreenController(this);
 		this.layer.add(this.compareScreenController.getView().getGroup());
 		this.layer.add(this.loadingController.getView().getGroup());
 		
