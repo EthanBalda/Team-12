@@ -36,7 +36,7 @@ describe("MainGameScreenModel", () => {
   it("rejects unaffordable buildings without changing state", () => {
     const model = new MainGameScreenModel();
 
-    for (let index = 0; index < 6; index++) {
+    for (let index = 0; index < 10; index++) {
       expect(model.build(getBuild("Refinery"))).toBe(true);
     }
 
@@ -44,6 +44,7 @@ describe("MainGameScreenModel", () => {
     const buildingsBefore = model.getBuildings();
 
     expect(model.build(getBuild("Refinery"))).toBe(true);
+    expect(model.getStats()).toEqual(statsBefore);
     expect(model.getBuildings()).toEqual(buildingsBefore);
   });
 
