@@ -112,6 +112,7 @@ export class MainGameScreenController extends ScreenController {
     }
     this.compareOverlay.visible(true);
     this.compareController.show();
+    this.compareController.updateMoney(this.model.getStats().money);
     this.view.getGroup().getLayer()?.draw();
   }
 

@@ -73,7 +73,7 @@ export class MainGameScreenModel {
         district,
         health: maxHealth,
         maxHealth,
-        populationLoss: option.pollution * 5,
+        populationLoss: option.populationLoss,
       });
       this.nextBuildingId++;
 

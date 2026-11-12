@@ -88,7 +88,7 @@ describe("MainGameScreenModel", () => {
     const result = model.applyWeatherDamage(30, "north");
     expect(result.destroyedBuildings[0]!.health).toBe(0);
     expect(model.getBuildings()).toEqual([]);
-    expect(model.getStats().population).toBe(10015);
+    expect(model.getStats().population).toBe(9950);
   });
 });
 
