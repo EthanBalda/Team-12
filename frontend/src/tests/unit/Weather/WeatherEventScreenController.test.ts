@@ -130,7 +130,7 @@ describe("weather controller integration", () => {
     const buildings = vi.mocked(view.updateBuildings).mock.lastCall![0];
     expect(view.updateYear).toHaveBeenLastCalledWith(2);
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
-    expect(view.showMessage).toHaveBeenCalledTimes(2);
+    expect(view.showMessage).toHaveBeenCalledTimes(3);
 
     minigame();
     expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "trivia" });

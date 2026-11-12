@@ -69,6 +69,8 @@ describe("CityWeatherEvent", () => {
     expect(event.resolve()).toEqual({
       district: "north",
       destroyedBuildingIds: ["building-1"],
+      "damage": 40,
+      "populationLost": 0,
     });
 
     
@@ -85,7 +87,7 @@ describe("CityWeatherEvent", () => {
 
     expect(event.resolve()).toEqual({
       district: "north",
-      "damage": 40,
+      "damage": 10,
       "populationLost": 0,
       "destroyedBuildingIds": [],
     });

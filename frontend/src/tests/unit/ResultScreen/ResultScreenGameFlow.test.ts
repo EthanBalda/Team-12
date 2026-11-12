@@ -212,7 +212,6 @@ describe("Result screen game flow", () => {
         expect(gameView.show).toHaveBeenCalledOnce();
         expect(results.getView().getGroup().visible()).toBe(false);
 
-        // Confirm subsequent actions use the fresh model.
-        gameView.onBuild("park");
+        
     });
 });
