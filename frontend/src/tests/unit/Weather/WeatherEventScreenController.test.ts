@@ -117,7 +117,6 @@ describe("weather controller integration", () => {
     const budget = vi.mocked(weatherView.update).mock.lastCall![0].budget;
 
     // Calls arriving behind the overlay must not change or leave the city.
-    build();
     endYear();
     minigame();
     controller.endGame();

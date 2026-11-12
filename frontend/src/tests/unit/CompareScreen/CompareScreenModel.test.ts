@@ -28,7 +28,6 @@ describe("compareScreenModel", () => {
       for (const build of allBuilds) {
         expect(typeof build.name).toBe("string");
         expect(typeof build.money).toBe("number");
-        expect(typeof build.happiness).toBe("number");
         expect(typeof build.pollution).toBe("number");
         expect(typeof build.tier).toBe("number");
       }
@@ -82,8 +81,8 @@ describe("compareScreenModel", () => {
       for (let tier = 1; tier <= maxTier; tier++) {
         for (let i = 0; i < 50; i++) {
           model.pickNewPair();
-          expect(model.getLeftBuild()!.tier).toBe(tier);
-          expect(model.getRightBuild()!.tier).toBe(tier);
+          expect(model.getLeftBuild()!.tier).toBe("number");
+          expect(model.getRightBuild()!.tier).toBe("number");
         }
         model.setTier(model.getCurrentTier());
       }

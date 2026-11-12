@@ -103,10 +103,15 @@ export class MainGameScreenController extends ScreenController {
     this.view.show();
   }
 
+  private compareOverlayAttached = false;
   private openCompare(): void {
     if (this.weatherOverlay !== null) return;
+    if (!this.compareOverlayAttached) {
+      this.view.getGroup().add(this.compareOverlay);
+      this.compareOverlayAttached = true;
+    }
     this.compareOverlay.visible(true);
-    this.compareController.show(); // picks a fresh random pair
+    this.compareController.show();
     this.view.getGroup().getLayer()?.draw();
   }
 
