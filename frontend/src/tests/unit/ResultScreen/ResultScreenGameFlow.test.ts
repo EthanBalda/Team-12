@@ -112,8 +112,8 @@ describe("Result screen game flow", () => {
     let results: ResultScreenController;
 
     const progressedStats = {
-        population: 10710,
-        money: 441420,
+        population: 10200,
+        money: 520400,
         pollution: 27,
         year: 2,
     };

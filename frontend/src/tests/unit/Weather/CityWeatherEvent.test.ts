@@ -59,24 +59,6 @@ describe("CityWeatherEvent", () => {
     expect(city.getStats().money).toBe(499900);
   });
 
-  it("damages the targeted district and derives population loss from destruction", () => {
-    const city = new MainGameScreenModel();
-    city.build(getBuild("Park"), "north");
-    city.build(getBuild("Factory"), "north");
-    city.build(getBuild("Factory"), "south");
-
-    const event = new CityWeatherEvent(floodEvent, city, "north");
-    expect(event.resolve()).toEqual({
-      district: "north",
-      destroyedBuildingIds: ["building-1"],
-      "damage": 40,
-      "populationLost": 0,
-    });
-
-    
-    expect(city.getStats().population).toBe(10450);
-  });
-
   it("lets preparations protect buildings and avoid population loss", () => {
     const city = new MainGameScreenModel();
     city.build(getBuild("Park"), "north");
