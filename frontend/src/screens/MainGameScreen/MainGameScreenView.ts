@@ -8,11 +8,13 @@ import {
 } from "./MainGameScreenModel.ts";
 import buildOptions from "../CompareScreen/buildOptions.json";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
+import { MINIGAME_CHOICES, type MiniGameChoice, type MiniGameId } from "../../MiniGames/registry.ts";
 
 export class MainGameScreenView implements View {
   private group: Konva.Group;
   private statsGroup: Konva.Group;
   private modalGroup: Konva.Group;
+  private minigameModal: Konva.Group;
   private statsText: Record<string, Konva.Text> = {};
 	private onOpenBuild: () => void;
 	private onEndYear: () => void;
@@ -40,17 +42,19 @@ export class MainGameScreenView implements View {
     fill: "#14265d",
   });
 
-  private onMinigame: () => void;
+  private onMinigame: (id: MiniGameId) => void;
   constructor(
     onOpenBuild: () => void,
     onEndYear: () => void,
-    onMinigame: () => void,
+    onMinigame: (id: MiniGameId) => void,
     onLogout: () => void,
+    minigames: MiniGameChoice[] = MINIGAME_CHOICES,
   ) {
     this.group = new Konva.Group({ visible: false });
     this.statsGroup = new Konva.Group();
     this.modalGroup = new Konva.Group({ visible: false });
-	  this.onOpenBuild = onOpenBuild;
+    this.onOpenBuild = onOpenBuild;
+    this.minigameModal = new Konva.Group({ visible: false });
     this.onEndYear = onEndYear;
     this.onMinigame = onMinigame;
     this.onLogout = onLogout;
@@ -245,10 +249,13 @@ export class MainGameScreenView implements View {
       180,
       55,
       "#8a5a9b",
-      () => this.onMinigame(),
+      () => this.showMinigameModal(),
     );
 
     this.group.add(this.modalGroup);
+
+    this.createMinigameModal(minigames);
+    this.group.add(this.minigameModal);
   }
 
   getSelectedDistrict(): District {
@@ -412,6 +419,81 @@ export class MainGameScreenView implements View {
     this.group.getLayer()?.batchDraw();
   }
 
+
+  private createMinigameModal(minigames: MiniGameChoice[]): void {
+    this.minigameModal.add(new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: STAGE_WIDTH,
+      height: STAGE_HEIGHT,
+      fill: "black",
+      opacity: 0.6,
+    }));
+
+    const panelWidth = 440;
+    const panelHeight = 155 + minigames.length * 75;
+    const panelX = (STAGE_WIDTH - panelWidth) / 2;
+    const panelY = (STAGE_HEIGHT - panelHeight) / 2;
+
+    this.minigameModal.add(new Konva.Rect({
+      x: panelX,
+      y: panelY,
+      width: panelWidth,
+      height: panelHeight,
+      fill: "#ffffff",
+      cornerRadius: 16,
+    }));
+
+    this.minigameModal.add(new Konva.Text({
+      x: panelX + 25,
+      y: panelY + 20,
+      width: panelWidth - 80,
+      text: "Play a Minigame",
+      fontSize: 25,
+      fontFamily: "Arial",
+      fontStyle: "bold",
+      fill: "#17232c",
+    }));
+
+    minigames.forEach((minigame, i) => {
+      this.addButton(
+        this.minigameModal,
+        minigame.label,
+        panelX + 25,
+        panelY + 75 + i * 75,
+        panelWidth - 50,
+        60,
+        "#8a5a9b",
+        () => this.selectMinigame(minigame.id),
+      );
+    });
+
+    this.addButton(
+      this.minigameModal,
+      "Cancel",
+      panelX + 25,
+      panelY + 90 + minigames.length * 75,
+      panelWidth - 50,
+      45,
+      "#59636e",
+      () => this.hideMinigameModal(),
+    );
+  }
+
+  private selectMinigame(id: MiniGameId): void {
+    this.hideMinigameModal();
+    this.onMinigame(id);
+  }
+
+  private showMinigameModal(): void {
+    this.minigameModal.visible(true);
+    this.group.getLayer()?.draw();
+  }
+
+  private hideMinigameModal(): void {
+    this.minigameModal.visible(false);
+    this.group.getLayer()?.draw();
+  }
 
   showMessage(message: string): void {
     const notice = new Konva.Text({
