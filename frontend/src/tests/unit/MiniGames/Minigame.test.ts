@@ -100,6 +100,38 @@ describe("Minigame", () => {
         expect(callback).not.toHaveBeenCalled();
     });
 
+    it("stops animations when paused and restarts them when resumed", () => {
+        game.callAddAnimation();
+
+        game.pause();
+        expect(animation.stop).toHaveBeenCalledOnce();
+
+        game.resume();
+        expect(animation.start).toHaveBeenCalledTimes(2);
+    });
+
+    it("ignores a second pause or resume", () => {
+        game.callAddAnimation();
+
+        game.pause();
+        game.pause();
+        game.resume();
+        game.resume();
+
+        expect(animation.stop).toHaveBeenCalledOnce();
+        expect(animation.start).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not restart animations after it is destroyed", () => {
+        game.callAddAnimation();
+        game.pause();
+
+        game.destroy();
+        game.resume();
+
+        expect(animation.start).toHaveBeenCalledOnce();
+    });
+
     it("stops running animations when destroyed", () => {
         game.callAddAnimation();
         expect(animation.start).toHaveBeenCalledOnce();
