@@ -8,6 +8,7 @@ import {
   DISTRICTS,
   MainGameScreenModel,
   type District,
+  type CityState,
 } from "./MainGameScreenModel.ts";
 import { compareScreenController } from "../CompareScreen/CompareScreenController";
 import type { Build } from "../CompareScreen/CompareScreenModel";
@@ -20,6 +21,8 @@ export class MainGameScreenController extends ScreenController {
   private compareController: compareScreenController;
   private compareOverlay: Konva.Group;
   private weatherOverlay: Konva.Group | null = null;
+  private persistenceEnabled = false;
+  private saveQueue: Promise<void> = Promise.resolve();
 
   private readonly screenSwitcher: ScreenSwitcher;
 
@@ -39,6 +42,7 @@ export class MainGameScreenController extends ScreenController {
       },
       async () => {
       try {
+        await this.saveGame();
         const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/logout`, {
           method: "POST",
           credentials: "include",
@@ -93,7 +97,47 @@ export class MainGameScreenController extends ScreenController {
     return this.view;
   }
 
-  startGame(): void {
+  async loadGame(): Promise<void> {
+    this.persistenceEnabled = false;
+    this.screenSwitcher.switchToScreen({ type: "loading" });
+    try {
+      const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/state`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Load failed");
+      const { cityState }: { cityState: CityState | null } = await response.json();
+      this.startGame();
+      if (cityState) this.model.restoreState(cityState);
+      this.compareController.setTier(1 + Math.floor((this.model.getStats().year - 1) / 2));
+      this.refreshView();
+      this.persistenceEnabled = true;
+      this.screenSwitcher.switchToScreen({ type: "resumeGame" });
+    } catch (error) {
+      console.error("Load failed:", error);
+      this.screenSwitcher.switchToScreen({ type: "loginWorld" });
+      window.alert("Could not load your city. Please try logging in again.");
+    }
+  }
+
+  private saveGame(): Promise<void> {
+    if (!this.persistenceEnabled) return Promise.resolve();
+    const body = JSON.stringify(this.model.getState());
+    // Keep writes in order so an older purchase cannot overwrite flood damage.
+    this.saveQueue = this.saveQueue.catch(() => {}).then(async () => {
+      const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/state`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+      });
+      if (!response.ok) throw new Error("Save failed");
+    });
+    return this.saveQueue;
+  }
+
+  startGame(persist = false): void {
+    this.persistenceEnabled = persist;
     this.weatherOverlay?.destroy();
     this.weatherOverlay = null;
     this.model = new MainGameScreenModel();
@@ -210,6 +254,9 @@ export class MainGameScreenController extends ScreenController {
           `${result.populationLost} residents lost.`,
         );
       },
+      () => {
+        void this.saveGame().catch(() => this.view.showMessage("Could not save your city. Please try again."));
+      },
     );
 
     const weatherGroup = controller.getView().getGroup();
@@ -235,5 +282,6 @@ export class MainGameScreenController extends ScreenController {
     this.view.updateStats(stats);
     this.view.updateYear(stats.year);
     this.view.updateBuildings(this.model.getBuildings());
+    void this.saveGame().catch(() => this.view.showMessage("Could not save your city. Please try again."));
   }
 }

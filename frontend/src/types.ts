@@ -19,6 +19,7 @@ export interface View extends ScreenView{
 export type Screen =
 	| { type: "createWorld" }
 	| { type: "loginWorld" }
+	| { type: "loadGame" }
     | { type: "mainGame" }
 	| { type: "miniGame"; id: MiniGameId }
 	| { type: "resumeGame"}

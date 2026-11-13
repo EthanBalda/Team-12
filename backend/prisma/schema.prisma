@@ -26,6 +26,7 @@ model World {
   worldID      String   @unique
   passwordHash String
   name         String?
+  cityState    Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

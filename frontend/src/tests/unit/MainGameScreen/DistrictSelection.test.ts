@@ -2,12 +2,14 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import Konva from "konva";
 import { MainGameScreenController } from "../../../screens/MainGameScreen/MainGameScreenController";
 import { DISTRICTS, MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
+import type { CityState } from "../../../screens/MainGameScreen/MainGameScreenModel";
 import { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScreenView";
 import buildOptions from "../../../screens/CompareScreen/buildOptions.json";
 
 afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 beforeEach(() => {
@@ -122,11 +124,17 @@ it("renders all buildings in their districts using catalog PNGs without paginati
   group.destroy();
 });
 
-it("refreshes health after floods and removes destroyed icons through the city controller", () => {
+it("saves flood damage and destruction, then restores the map and unique IDs on login", async () => {
+  let saved: CityState | null = null;
+  const fetchMock = vi.fn(async (_url: string, options?: RequestInit) => {
+    if (options?.method === "PUT") saved = JSON.parse(options.body as string);
+    return { ok: true, json: async () => ({ cityState: saved }) };
+  });
+  vi.stubGlobal("fetch", fetchMock);
   const controller = new MainGameScreenController({ switchToScreen: vi.fn() });
   const view = controller.getView();
   const group = view.getGroup();
-  view.show();
+  controller.startGame(true);
   clickButton(group, "Build");
   clickButton(group, "Select");
   group.findOne(".district-south")!.fire("click");
@@ -148,11 +156,62 @@ it("refreshes health after floods and removes destroyed icons through the city c
   expect(tooltip.getText().text()).toContain("Health: 10/50");
   group.findOne(".building-2")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 50/50");
-  for (let i = 0; i < 4; i++) resolveAnnualFlood(); // South, East, West, North.
+  for (let i = 0; i < 3; i++) resolveAnnualFlood(); // South, East, West.
+  clickButton(group, "End Year"); // North again.
+  clickButton(group, "Face the Flood");
+  // Save the damage even if the player reloads before returning from flood results.
+  await vi.waitFor(() => {
+    expect(saved?.stats.year).toBe(6);
+    expect(saved?.buildings).toHaveLength(1);
+    expect(saved?.buildings?.[0]).toMatchObject({ id: "building-2", district: "south", health: 10 });
+  });
+  clickButton(group, "Return to City");
   expect(group.findOne(".building-1")).toBeUndefined();
   expect(group.findOne(".building-2")).toBeDefined();
   expect(tooltip.visible()).toBe(false);
   group.findOne(".building-2")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 10/50");
+  const reloaded = new MainGameScreenController({ switchToScreen: vi.fn() });
+  const restoredStats = vi.spyOn(reloaded.getView(), "updateStats");
+  await reloaded.loadGame();
+  expect(restoredStats).toHaveBeenLastCalledWith(saved!.stats);
+  const restoredGroup = reloaded.getView().getGroup();
+  expect(restoredGroup.findOne(".building-1")).toBeUndefined();
+  const restoredSouth = restoredGroup.findOne<Konva.Group>(".district-south")!;
+  restoredSouth.findOne(".building-2")!.fire("mouseenter");
+  const restoredTooltip = restoredGroup.findOne<Konva.Label>(".building-tooltip")!;
+  expect(restoredTooltip.getText().text()).toBe(tooltip.getText().text());
+  clickButton(restoredGroup, "Build");
+  clickButton(restoredGroup, "Select");
+  await vi.waitFor(() => {
+    expect(saved?.buildings?.map((building) => building.id)).toEqual(["building-2", "building-3"]);
+  });
+  expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/worlds/state"),
+    expect.objectContaining({ credentials: "include" }));
+  restoredGroup.destroy();
   group.destroy();
+});
+
+it("loads an older world with no snapshot without overwriting it on load", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ cityState: null }) });
+  vi.stubGlobal("fetch", fetchMock);
+  const switchToScreen = vi.fn();
+  const controller = new MainGameScreenController({ switchToScreen });
+  await controller.loadGame();
+  expect(controller.getView().getGroup().find("Image")).toHaveLength(0);
+  expect(fetchMock).toHaveBeenCalledOnce();
+  expect(switchToScreen).toHaveBeenLastCalledWith({ type: "resumeGame" });
+  controller.getView().getGroup().destroy();
+});
+
+it("does not overwrite a saved world when loading fails", async () => {
+  const fetchMock = vi.fn().mockResolvedValue({ ok: false });
+  vi.stubGlobal("fetch", fetchMock);
+  vi.spyOn(window, "alert").mockImplementation(() => {});
+  const switchToScreen = vi.fn();
+  const controller = new MainGameScreenController({ switchToScreen });
+  await controller.loadGame();
+  expect(fetchMock).toHaveBeenCalledOnce();
+  expect(switchToScreen).toHaveBeenLastCalledWith({ type: "loginWorld" });
+  controller.getView().getGroup().destroy();
 });

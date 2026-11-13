@@ -13,6 +13,49 @@ const getBuild = (name: string): Build => {
 };
 
 describe("MainGameScreenModel", () => {
+  it("restores damaged buildings with their city stats and allocates unused IDs", () => {
+    const city = new MainGameScreenModel();
+    city.build(getBuild("Factory"), "south");
+    city.build(getBuild("Park"), "north");
+    city.applyWeatherDamage(40, "south");
+    city.applyWeatherDamage(50, "north");
+    city.endYear();
+    const snapshot = JSON.parse(JSON.stringify(city.getState()));
+    const restored = new MainGameScreenModel();
+    restored.restoreState(snapshot);
+    expect(restored.getStats()).toEqual(city.getStats());
+    expect(restored.getBuildings()).toEqual([{
+      id: "building-1", type: "Factory", district: "south",
+      health: 10, maxHealth: 50, populationLoss: 200,
+    }]);
+    restored.build(getBuild("Park"), "east");
+    expect(restored.getBuildings()[1]).toMatchObject({ id: "building-3", district: "east" });
+    // The removed building-2 is not resurrected or reused.
+    snapshot.buildings[0].health = 50;
+    expect(restored.getBuildings()[0]!.health).toBe(10);
+  });
+
+  it("loads stats from older worlds without building data", () => {
+    const city = new MainGameScreenModel();
+    const stats = { population: 12000, money: 320000, pollution: 18, year: 7 };
+    city.restoreState({ stats });
+    expect(city.getStats()).toEqual(stats);
+    expect(city.getBuildings()).toEqual([]);
+    city.build(getBuild("Park"));
+    expect(city.getBuildings()[0]!.id).toBe("building-1");
+  });
+
+  it("derives the next ID from restored buildings if the counter is absent", () => {
+    const city = new MainGameScreenModel();
+    city.build(getBuild("Park"));
+    const state = city.getState();
+    state.buildings![0]!.id = "building-20";
+    delete state.nextBuildingId;
+    city.restoreState(state);
+    city.build(getBuild("Park"));
+    expect(city.getBuildings()[1]!.id).toBe("building-21");
+  });
+
   it("assigns the correct health to current building tier", () => {
     const model = new MainGameScreenModel();
 

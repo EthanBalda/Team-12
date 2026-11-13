@@ -4,7 +4,8 @@ import { CreateWorldRequest, LoginWorldRequest } from '../types/requestTypes';
 import { AppError } from '../middleware/errorHandler';
 import { generateWorldToken } from '../libs/jwt';
 import { authenticateWorld } from '../middleware/authenticateWorld';
-// import { authenticateWorld } from '../middleware/authenticateWorld';
+import { getWorldByWorldId, saveCityState } from '../repositories/worldRepository';
+import { validateCityState } from '../services/cityState';
 
 const worldRouter = express.Router();
 
@@ -94,6 +95,26 @@ worldRouter.get("/me", authenticateWorld, async(req, res, next) => {
         next(error);
     }
 
+});
+
+worldRouter.get("/state", authenticateWorld, async (req, res, next) => {
+    try {
+        const world = await getWorldByWorldId(req.worldID!);
+        if (!world) throw new AppError(404, "World not found");
+        return res.json({ cityState: world.cityState ?? null });
+    } catch (error) {
+        next(error);
+    }
+});
+
+worldRouter.put("/state", authenticateWorld, async (req, res, next) => {
+    try {
+        validateCityState(req.body);
+        await saveCityState(req.worldID!, req.body);
+        return res.json({ success: true });
+    } catch (error) {
+        next(error);
+    }
 });
 
 worldRouter.post("/logout", (req: Request, res: Response) => {

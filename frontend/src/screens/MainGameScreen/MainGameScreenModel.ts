@@ -22,6 +22,12 @@ export interface WeatherDamageResult {
   destroyedBuildings: CityBuilding[];
 }
 
+export interface CityState {
+  stats: { population: number; money: number; pollution: number; year: number };
+  buildings?: CityBuilding[];
+  nextBuildingId?: number;
+}
+
 export class MainGameScreenModel {
   private population = 10000;
   private money = 500000;
@@ -30,6 +36,28 @@ export class MainGameScreenModel {
 
   private buildings: CityBuilding[] = [];
   private nextBuildingId = 1;
+
+  restoreState(state: CityState): void {
+    this.population = state.stats.population;
+    this.money = state.stats.money;
+    this.pollution = state.stats.pollution;
+    this.year = state.stats.year;
+    this.buildings = (state.buildings ?? [])
+      .filter((building) => building.health > 0)
+      .map((building) => ({ ...building }));
+    this.nextBuildingId = Math.max(
+      state.nextBuildingId ?? 1,
+      ...this.buildings.map((building) => Number(building.id.slice("building-".length)) + 1),
+    );
+  }
+
+  getState(): CityState {
+    return {
+      stats: this.getStats(),
+      buildings: this.getBuildings(),
+      nextBuildingId: this.nextBuildingId,
+    };
+  }
 
   getStats() {
     return {
