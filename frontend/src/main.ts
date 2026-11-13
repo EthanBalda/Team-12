@@ -86,7 +86,7 @@ class App implements ScreenSwitcher {
     	const loggedIn = await checkLogin();
 
 		if(loggedIn){
-			this.switchToScreen({ type: "mainGame" });
+			this.switchToScreen({ type: "loadGame" });
 		} 
 		else{
 			this.switchToScreen({ type: "createWorld" });
@@ -125,8 +125,11 @@ class App implements ScreenSwitcher {
 				this.loginWorldController.show();
 				break;
             case "mainGame":
-				this.mainGameController.startGame();
+				this.mainGameController.startGame(true);
 				break;
+            case "loadGame":
+                void this.mainGameController.loadGame();
+                break;
 			case "miniGame":
 				this.miniGameController.play(screen.id);
 				break;

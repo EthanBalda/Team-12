@@ -14,15 +14,18 @@ export class WeatherEventScreenController {
   private readonly view: WeatherEventScreenView;
   private readonly onComplete: (result: WeatherResolution) => void;
   private completed = false;
+  private readonly onResolved: () => void;
 
   constructor(
     definition: WeatherEvent,
     city: MainGameScreenModel,
     district: District,
     onComplete: (result: WeatherResolution) => void,
+    onResolved: () => void = () => {},
   ) {
     this.event = new CityWeatherEvent(definition, city, district);
     this.onComplete = onComplete;
+    this.onResolved = onResolved;
 
     this.view = new WeatherEventScreenView(
       definition.name,
@@ -76,6 +79,7 @@ export class WeatherEventScreenController {
 
     if (!this.event.getState().resolved) {
       const result = this.event.resolve();
+      this.onResolved();
 
       this.refreshView();
       this.view.showMessage(

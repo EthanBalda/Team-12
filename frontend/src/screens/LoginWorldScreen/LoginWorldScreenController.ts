@@ -68,7 +68,7 @@ export class LoginWorldScreenController extends ScreenController {
                 );
             }
 
-            this.screenSwitcher.switchToScreen({ type: "mainGame" });
+            this.screenSwitcher.switchToScreen({ type: "loadGame" });
         } catch {
             this.view.setError(
                 "Could not login to your world. Please try again.",
