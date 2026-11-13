@@ -6,6 +6,7 @@ import {
   type CityBuilding,
   type District,
 } from "./MainGameScreenModel.ts";
+import buildOptions from "../CompareScreen/buildOptions.json";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
 
 export class MainGameScreenView implements View {
@@ -19,37 +20,22 @@ export class MainGameScreenView implements View {
   private selectedDistrict: District = "north";
   private districtRegions: Partial<Record<District, Konva.Line>> = {};
   private buildings: CityBuilding[] = [];
-  private buildingPage = 0;
-  private displayedYear = 1;
-
-  private readonly districtHeading = new Konva.Text({
-    x: 520,
-    y: 180,
-    width: 640,
-    fontFamily: "Arial",
-    fontSize: 22,
-    fontStyle: "bold",
-    fill: "#14265d",
+  private buildingGroups: Partial<Record<District, Konva.Group>> = {};
+  private buildingImages: Record<string, HTMLImageElement> = {};
+  private readonly buildingTooltip = new Konva.Label({
+    name: "building-tooltip",
+    visible: false,
+    listening: false,
   });
 
-  private readonly inventoryText = new Konva.Text({
-    x: 520,
-    y: 225,
-    width: 640,
-    height: 300,
-    fontFamily: "Arial",
-    fontSize: 20,
-    lineHeight: 1.7,
-    fill: "#14265d",
-  });
-
-  private readonly pageText = new Konva.Text({
-    x: 700,
-    y: 610,
-    width: 280,
+  private readonly yearText = new Konva.Text({
+    x: 980,
+    y: 150,
+    width: 190,
+    text: "Year 1",
     fontFamily: "Arial",
     fontSize: 18,
-    align: "center",
+    align: "right",
     fill: "#14265d",
   });
 
@@ -145,13 +131,13 @@ export class MainGameScreenView implements View {
       () => this.onEndYear(),
     );
 
-    // Four map regions meet at the city center; the inventory stays beside them.
+    // Four map regions meet at the city center.
     const map = new Konva.Group({ x: 30, y: 170 });
     const regions: Record<District, { points: number[]; x: number; y: number }> = {
-      north: { points: [0, 0, 450, 0, 225, 235], x: 160, y: 60 },
-      south: { points: [0, 470, 225, 235, 450, 470], x: 160, y: 380 },
-      east: { points: [450, 0, 450, 470, 225, 235], x: 310, y: 220 },
-      west: { points: [0, 0, 225, 235, 0, 470], x: 10, y: 220 },
+      north: { points: [0, 0, 1140, 0, 570, 235], x: 505, y: 10 },
+      south: { points: [0, 470, 570, 235, 1140, 470], x: 505, y: 440 },
+      east: { points: [1140, 0, 1140, 470, 570, 235], x: 920, y: 140 },
+      west: { points: [0, 0, 570, 235, 0, 470], x: 90, y: 140 },
     };
 
     DISTRICTS.forEach((district) => {
@@ -171,9 +157,11 @@ export class MainGameScreenView implements View {
         align: "center",
         listening: false,
       }));
+      const buildings = new Konva.Group({ name: "buildings" });
+      this.buildingGroups[district] = buildings;
+      region.add(buildings);
       region.on("click tap", () => {
         this.selectedDistrict = district;
-        this.buildingPage = 0;
         this.renderBuildings();
       });
       region.on("mouseenter", () => {
@@ -186,48 +174,18 @@ export class MainGameScreenView implements View {
     });
     this.group.add(map);
 
-    this.group.add(
-      new Konva.Rect({
-        x: 500,
-        y: 160,
-        width: STAGE_WIDTH - 520,
-        height: 490,
-        fill: "white",
-        opacity: 0.94,
-        cornerRadius: 12,
+    this.buildingTooltip.add(
+      new Konva.Tag({ fill: "white", stroke: "#14265d", cornerRadius: 6 }),
+      new Konva.Text({
+        width: 280,
+        padding: 10,
+        fontFamily: "Arial",
+        fontSize: 18,
+        lineHeight: 1.4,
+        fill: "#14265d",
       }),
-      this.districtHeading,
-      this.inventoryText,
-      this.pageText,
     );
-
-    this.addButton(
-      this.group,
-      "Previous",
-      520,
-      595,
-      160,
-      40,
-      "#59636e",
-      () => {
-        this.buildingPage = Math.max(0, this.buildingPage - 1);
-        this.renderBuildings();
-      },
-    );
-
-    this.addButton(
-      this.group,
-      "Next",
-      STAGE_WIDTH - 190,
-      595,
-      160,
-      40,
-      "#59636e",
-      () => {
-        this.buildingPage++;
-        this.renderBuildings();
-      },
-    );
+    this.group.add(this.yearText, this.buildingTooltip);
 
     this.renderBuildings();
 
@@ -264,44 +222,64 @@ export class MainGameScreenView implements View {
       });
     });
 
-    const districtBuildings = this.buildings.filter(
-      (building) => building.district === this.selectedDistrict,
-    );
-
-    const pageSize = 8;
-    const pageCount = Math.max(
-      1,
-      Math.ceil(districtBuildings.length / pageSize),
-    );
-
-    this.buildingPage = Math.min(this.buildingPage, pageCount - 1);
-
-    const visibleBuildings = districtBuildings.slice(
-      this.buildingPage * pageSize,
-      (this.buildingPage + 1) * pageSize,
-    );
-
-    this.districtHeading.text(
-      `${this.selectedDistrict.toUpperCase()} DISTRICT — ` +
-      `${districtBuildings.length} building(s)`,
-    );
-
-    this.inventoryText.text(
-      visibleBuildings.length === 0
-        ? "No buildings here. Use Build to develop this district."
-        : visibleBuildings
-            .map((building) =>
-              `${building.id}  •  ${building.type}  •  ` +
-              `Health: ${building.health}/${building.maxHealth}`,
-            )
-            .join("\n"),
-    );
-
-    this.pageText.text(
-      `Year ${this.displayedYear}  •  ` +
-      `Page ${this.buildingPage + 1} of ${pageCount}`,
-    );
-
+    this.buildingTooltip.hide();
+    // These rectangles sit inside the four triangular regions, below their labels.
+    const bounds: Record<District, { x: number; y: number; width: number; height: number }> = {
+      north: { x: 340, y: 40, width: 460, height: 90 },
+      south: { x: 340, y: 340, width: 460, height: 90 },
+      east: { x: 840, y: 170, width: 260, height: 130 },
+      west: { x: 40, y: 170, width: 260, height: 130 },
+    };
+    DISTRICTS.forEach((district) => {
+      const group = this.buildingGroups[district]!;
+      group.destroyChildren();
+      const buildings = this.buildings.filter((building) => building.district === district);
+      const area = bounds[district];
+      // Fit every building without overlapping or imposing an inventory page limit.
+      const columns = Math.max(1, Math.ceil(Math.sqrt(buildings.length * area.width / area.height)));
+      const rows = Math.max(1, Math.ceil(buildings.length / columns));
+      const cellWidth = area.width / columns;
+      const cellHeight = area.height / rows;
+      const size = Math.min(64, cellWidth * 0.85, cellHeight * 0.85);
+      buildings.forEach((building, index) => {
+        const asset = buildOptions.find((option) => option.name === building.type)!.type;
+        if (!this.buildingImages[asset]) {
+          const image = new Image();
+          image.onload = () => this.renderBuildings();
+          image.src = `/${asset}.png`;
+          this.buildingImages[asset] = image;
+        }
+        const image = this.buildingImages[asset]!;
+        const ratio = image.naturalWidth / image.naturalHeight || 1;
+        const width = Math.min(size, size * ratio);
+        const height = Math.min(size, size / ratio);
+        const icon = new Konva.Image({
+          name: building.id,
+          x: area.x + (index % columns) * cellWidth + (cellWidth - width) / 2,
+          y: area.y + Math.floor(index / columns) * cellHeight + (cellHeight - height) / 2,
+          width,
+          height,
+          image,
+        });
+        icon.on("mouseenter", () => {
+          this.buildingTooltip.getText().text(
+            `${building.type}\nHealth: ${building.health}/${building.maxHealth}`,
+          );
+          const position = icon.getAbsolutePosition(this.group);
+          this.buildingTooltip.position({
+            x: Math.min(position.x, STAGE_WIDTH - 310),
+            y: Math.min(position.y + size + 5, 550),
+          });
+          this.buildingTooltip.show();
+          this.group.getLayer()?.batchDraw();
+        });
+        icon.on("mouseleave", () => {
+          this.buildingTooltip.hide();
+          this.group.getLayer()?.batchDraw();
+        });
+        group.add(icon);
+      });
+    });
     this.group.getLayer()?.batchDraw();
   }
 
@@ -365,8 +343,8 @@ export class MainGameScreenView implements View {
   }
 
   updateYear(year: number): void {
-    this.displayedYear = year;
-    this.renderBuildings();
+    this.yearText.text(`Year ${year}`);
+    this.group.getLayer()?.batchDraw();
   }
 
 
