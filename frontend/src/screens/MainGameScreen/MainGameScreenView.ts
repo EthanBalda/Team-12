@@ -19,6 +19,7 @@ export class MainGameScreenView implements View {
   private onLogout: () => void;
   private selectedDistrict: District = "north";
   private districtRegions: Partial<Record<District, Konva.Line>> = {};
+  private districtOutlines: Partial<Record<District, Konva.Line>> = {};
   private buildings: CityBuilding[] = [];
   private buildingGroups: Partial<Record<District, Konva.Group>> = {};
   private buildingImages: Record<string, HTMLImageElement> = {};
@@ -132,7 +133,10 @@ export class MainGameScreenView implements View {
     );
 
     // Four map regions meet at the city center.
-    const map = new Konva.Group({ x: 30, y: 170 });
+    const map = new Konva.Group({
+      name: "city-map", x: 30, y: 170,
+      clipX: 0, clipY: 0, clipWidth: 1140, clipHeight: 470,
+    });
     const regions: Record<District, { points: number[]; x: number; y: number }> = {
       north: { points: [0, 0, 1140, 0, 570, 235], x: 505, y: 10 },
       south: { points: [0, 470, 570, 235, 1140, 470], x: 505, y: 440 },
@@ -140,12 +144,26 @@ export class MainGameScreenView implements View {
       west: { points: [0, 0, 570, 235, 0, 470], x: 90, y: 140 },
     };
 
+    const outlines: Record<District, number[]> = {
+      north: [50, 18, 1090, 18, 570, 212],
+      south: [50, 452, 570, 258, 1090, 452],
+      east: [1122, 28, 1122, 442, 602, 235],
+      west: [18, 28, 538, 235, 18, 442],
+    };
     DISTRICTS.forEach((district) => {
       const { points, x, y } = regions[district];
       const region = new Konva.Group({ name: `district-${district}` });
       const shape = new Konva.Line({ points, closed: true });
       this.districtRegions[district] = shape;
-      region.add(shape, new Konva.Text({
+      const outline = new Konva.Line({
+        points: outlines[district], closed: true,
+        stroke: "#2c675d", strokeWidth: 3, listening: false,
+      });
+      this.districtOutlines[district] = outline;
+      region.add(shape, outline, new Konva.Rect({
+        x: x - 8, y: y - 4, width: 146, height: 28,
+        fill: "#e9eddd", cornerRadius: 5, listening: false,
+      }), new Konva.Text({
         x,
         y,
         width: 130,
@@ -172,6 +190,36 @@ export class MainGameScreenView implements View {
       });
       map.add(region);
     });
+    // Decoration never intercepts region clicks or building hover events.
+    const terrain = new Konva.Group({ name: "terrain", listening: false });
+    const river = [25, -20, 45, 80, 30, 160, 60, 260, 35, 400, 15, 490];
+    terrain.add(
+      new Konva.Line({ points: river, tension: 0.35, stroke: "#d5d8bc", strokeWidth: 60 }),
+      new Konva.Line({ points: river, tension: 0.35, stroke: "#79abb5", strokeWidth: 38 }),
+      new Konva.Line({ points: river, tension: 0.35, stroke: "#b5d7d9", strokeWidth: 3 }),
+    );
+    ([[120, 65], [980, 390], [120, 400], [980, 75]] as const).forEach(([x, y]) => {
+      ([[0, 0], [22, 10], [10, -19]] as const).forEach(([dx, dy]) => {
+        terrain.add(
+          new Konva.Circle({ x: x + dx, y: y + dy + 5, radius: 13, fill: "#8ca184" }),
+          new Konva.Circle({ x: x + dx, y: y + dy, radius: 12, fill: "#4f8060" }),
+          new Konva.Circle({ x: x + dx - 3, y: y + dy - 3, radius: 7, fill: "#69946b" }),
+        );
+      });
+    });
+    const roads = new Konva.Group({ name: "roads", listening: false });
+    [[0, 0, 570, 235, 1140, 470], [0, 470, 570, 235, 1140, 0]].forEach((points) => {
+      roads.add(
+        new Konva.Line({ points, stroke: "#d8d3c2", strokeWidth: 28 }),
+        new Konva.Line({ points, stroke: "#66716e", strokeWidth: 20 }),
+        new Konva.Line({ points, stroke: "#eee6c7", strokeWidth: 2, dash: [12, 12] }),
+      );
+    });
+    roads.add(
+      new Konva.Circle({ x: 570, y: 235, radius: 24, fill: "#66716e", stroke: "#d8d3c2", strokeWidth: 3 }),
+      new Konva.Circle({ x: 570, y: 235, radius: 12, fill: "#8fa780" }),
+    );
+    map.add(terrain, roads);
     this.group.add(map);
 
     this.buildingTooltip.add(
@@ -216,14 +264,15 @@ export class MainGameScreenView implements View {
     DISTRICTS.forEach((district) => {
       const selected = district === this.selectedDistrict;
       this.districtRegions[district]?.setAttrs({
-        fill: selected ? "#f5d878" : "#a8c9ad",
-        stroke: selected ? "#14265d" : "#536b5b",
-        strokeWidth: selected ? 4 : 2,
+        fill: selected ? "#c7d3b4" : "#b1c3a8",
+        stroke: "#849b80",
+        strokeWidth: 1,
       });
+      this.districtOutlines[district]?.visible(selected);
     });
 
     this.buildingTooltip.hide();
-    // These rectangles sit inside the four triangular regions, below their labels.
+    // Fit compact rows along the inside of each district's diagonal roads.
     const bounds: Record<District, { x: number; y: number; width: number; height: number }> = {
       north: { x: 340, y: 40, width: 460, height: 90 },
       south: { x: 340, y: 340, width: 460, height: 90 },
@@ -236,7 +285,9 @@ export class MainGameScreenView implements View {
       const buildings = this.buildings.filter((building) => building.district === district);
       const area = bounds[district];
       // Fit every building without overlapping or imposing an inventory page limit.
-      const columns = Math.max(1, Math.ceil(Math.sqrt(buildings.length * area.width / area.height)));
+      const columns = Math.max(1, Math.min(
+        buildings.length, Math.ceil(Math.sqrt(buildings.length * area.width / area.height)),
+      ));
       const rows = Math.max(1, Math.ceil(buildings.length / columns));
       const cellWidth = area.width / columns;
       const cellHeight = area.height / rows;
@@ -253,10 +304,19 @@ export class MainGameScreenView implements View {
         const ratio = image.naturalWidth / image.naturalHeight || 1;
         const width = Math.min(size, size * ratio);
         const height = Math.min(size, size / ratio);
+        let x = area.x + (index % columns) * cellWidth + (cellWidth - width) / 2;
+        let y = area.y + Math.floor(index / columns) * cellHeight + (cellHeight - height) / 2;
+        if (district === "north" || district === "south") {
+          const roadY = Math.min(x + width / 2, 1140 - x - width / 2) * 235 / 570;
+          y += district === "north" ? roadY - 36 - area.height - area.y : 470 - roadY + 36 - area.y;
+        } else {
+          const roadX = Math.min(y + height / 2, 470 - y - height / 2) * 570 / 235;
+          x += district === "west" ? roadX - 100 - area.width - area.x : 1140 - roadX + 100 - area.x;
+        }
         const icon = new Konva.Image({
           name: building.id,
-          x: area.x + (index % columns) * cellWidth + (cellWidth - width) / 2,
-          y: area.y + Math.floor(index / columns) * cellHeight + (cellHeight - height) / 2,
+          x,
+          y,
           width,
           height,
           image,
@@ -266,9 +326,14 @@ export class MainGameScreenView implements View {
             `${building.type}\nHealth: ${building.health}/${building.maxHealth}`,
           );
           const position = icon.getAbsolutePosition(this.group);
+          const tooltipHeight = this.buildingTooltip.getText().height();
+          // Stay between the side labels, below North and above South.
           this.buildingTooltip.position({
-            x: Math.min(position.x, STAGE_WIDTH - 310),
-            y: Math.min(position.y + size + 5, 550),
+            x: Math.max(270, Math.min(position.x, 950 - this.buildingTooltip.width() - 12)),
+            y: Math.max(210, Math.min(
+              district === "south" ? position.y - tooltipHeight - 12 : position.y + height + 12,
+              600 - tooltipHeight,
+            )),
           });
           this.buildingTooltip.show();
           this.group.getLayer()?.batchDraw();

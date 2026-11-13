@@ -124,6 +124,41 @@ it("renders all buildings in their districts using catalog PNGs without paginati
   group.destroy();
 });
 
+it("keeps decoration passive and hover details inside the map clear of every district label", () => {
+  const view = new MainGameScreenView(vi.fn(), vi.fn(), vi.fn(), vi.fn());
+  const group = view.getGroup();
+  view.show();
+  const map = group.findOne<Konva.Group>(".city-map")!;
+  expect(map.findOne(".roads")!.isListening()).toBe(false);
+  expect(map.findOne(".terrain")!.isListening()).toBe(false);
+  view.updateBuildings(DISTRICTS.map((district, index) => ({
+    id: `building-${index + 1}`, type: "Fossil-Fuel Power Plant III", district,
+    health: 35, maxHealth: 100, populationLoss: 100,
+  })));
+  for (const [index, district] of DISTRICTS.entries()) {
+    const region = map.findOne<Konva.Group>(`.district-${district}`)!;
+    region.fire("click");
+    expect(view.getSelectedDistrict()).toBe(district);
+    expect(region.find<Konva.Line>("Line")[1]!.visible()).toBe(true);
+    region.findOne(`.building-${index + 1}`)!.fire("mouseenter");
+    const tooltip = group.findOne<Konva.Label>(".building-tooltip")!;
+    const rect = tooltip.getClientRect({ relativeTo: group });
+    expect(rect.x).toBeGreaterThanOrEqual(30);
+    expect(rect.y).toBeGreaterThanOrEqual(170);
+    expect(rect.x + rect.width).toBeLessThanOrEqual(1170);
+    expect(rect.y + rect.height).toBeLessThanOrEqual(640);
+    for (const other of DISTRICTS) {
+      const label = map.findOne<Konva.Group>(`.district-${other}`)!
+        .findOne<Konva.Text>("Text")!.getClientRect({ relativeTo: group });
+      expect(rect.x + rect.width <= label.x || rect.x >= label.x + label.width ||
+        rect.y + rect.height <= label.y || rect.y >= label.y + label.height,
+        `${district} tooltip ${JSON.stringify(rect)} overlaps ${other} label ${JSON.stringify(label)}`,
+      ).toBe(true);
+    }
+  }
+  group.destroy();
+});
+
 it("saves flood damage and destruction, then restores the map and unique IDs on login", async () => {
   let saved: CityState | null = null;
   const fetchMock = vi.fn(async (_url: string, options?: RequestInit) => {
