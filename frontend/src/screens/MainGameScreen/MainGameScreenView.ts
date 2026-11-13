@@ -17,14 +17,15 @@ export class MainGameScreenView implements View {
 	private onEndYear: () => void;
   private onLogout: () => void;
   private selectedDistrict: District = "north";
+  private districtRegions: Partial<Record<District, Konva.Line>> = {};
   private buildings: CityBuilding[] = [];
   private buildingPage = 0;
   private displayedYear = 1;
 
   private readonly districtHeading = new Konva.Text({
-    x: 30,
-    y: 220,
-    width: 1100,
+    x: 520,
+    y: 180,
+    width: 640,
     fontFamily: "Arial",
     fontSize: 22,
     fontStyle: "bold",
@@ -32,9 +33,9 @@ export class MainGameScreenView implements View {
   });
 
   private readonly inventoryText = new Konva.Text({
-    x: 30,
-    y: 265,
-    width: 1100,
+    x: 520,
+    y: 225,
+    width: 640,
     height: 300,
     fontFamily: "Arial",
     fontSize: 20,
@@ -43,9 +44,9 @@ export class MainGameScreenView implements View {
   });
 
   private readonly pageText = new Konva.Text({
-    x: 450,
+    x: 700,
     y: 610,
-    width: 300,
+    width: 280,
     fontFamily: "Arial",
     fontSize: 18,
     align: "center",
@@ -144,29 +145,53 @@ export class MainGameScreenView implements View {
       () => this.onEndYear(),
     );
 
-    DISTRICTS.forEach((district, index) => {
-      this.addButton(
-        this.group,
-        district.toUpperCase(),
-        30 + index * 285,
-        160,
-        260,
-        42,
-        "#187568",
-        () => {
-          this.selectedDistrict = district;
-          this.buildingPage = 0;
-          this.renderBuildings();
-        },
-      );
+    // Four map regions meet at the city center; the inventory stays beside them.
+    const map = new Konva.Group({ x: 30, y: 170 });
+    const regions: Record<District, { points: number[]; x: number; y: number }> = {
+      north: { points: [0, 0, 450, 0, 225, 235], x: 160, y: 60 },
+      south: { points: [0, 470, 225, 235, 450, 470], x: 160, y: 380 },
+      east: { points: [450, 0, 450, 470, 225, 235], x: 310, y: 220 },
+      west: { points: [0, 0, 225, 235, 0, 470], x: 10, y: 220 },
+    };
+
+    DISTRICTS.forEach((district) => {
+      const { points, x, y } = regions[district];
+      const region = new Konva.Group({ name: `district-${district}` });
+      const shape = new Konva.Line({ points, closed: true });
+      this.districtRegions[district] = shape;
+      region.add(shape, new Konva.Text({
+        x,
+        y,
+        width: 130,
+        text: district.toUpperCase(),
+        fontFamily: "Arial",
+        fontSize: 20,
+        fontStyle: "bold",
+        fill: "#14265d",
+        align: "center",
+        listening: false,
+      }));
+      region.on("click tap", () => {
+        this.selectedDistrict = district;
+        this.buildingPage = 0;
+        this.renderBuildings();
+      });
+      region.on("mouseenter", () => {
+        region.getStage()?.container().style.setProperty("cursor", "pointer");
+      });
+      region.on("mouseleave", () => {
+        region.getStage()?.container().style.setProperty("cursor", "default");
+      });
+      map.add(region);
     });
+    this.group.add(map);
 
     this.group.add(
       new Konva.Rect({
-        x: 20,
-        y: 210,
-        width: STAGE_WIDTH - 40,
-        height: 440,
+        x: 500,
+        y: 160,
+        width: STAGE_WIDTH - 520,
+        height: 490,
         fill: "white",
         opacity: 0.94,
         cornerRadius: 12,
@@ -179,7 +204,7 @@ export class MainGameScreenView implements View {
     this.addButton(
       this.group,
       "Previous",
-      30,
+      520,
       595,
       160,
       40,
@@ -230,6 +255,15 @@ export class MainGameScreenView implements View {
   }
 
   private renderBuildings(): void {
+    DISTRICTS.forEach((district) => {
+      const selected = district === this.selectedDistrict;
+      this.districtRegions[district]?.setAttrs({
+        fill: selected ? "#f5d878" : "#a8c9ad",
+        stroke: selected ? "#14265d" : "#536b5b",
+        strokeWidth: selected ? 4 : 2,
+      });
+    });
+
     const districtBuildings = this.buildings.filter(
       (building) => building.district === this.selectedDistrict,
     );
