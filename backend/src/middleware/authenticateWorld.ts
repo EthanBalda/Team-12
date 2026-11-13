@@ -27,15 +27,20 @@ export function authenticateWorld(
         return next(new AppError(401, "Authentication required"));
     }
 
-    // verify the jwt token
-    const decoded = jwt.verify(worldToken, JWT_SECRET, { algorithms: ["HS256"] });
+    try {
+         // verify the jwt token
+        const decoded = jwt.verify(worldToken, JWT_SECRET, { algorithms: ["HS256"] });
 
-    if(typeof decoded === "string" || typeof decoded.worldID !== "string" || !decoded.worldID){
-        throw new AppError(401, "Invalid authentication token");
+        if(typeof decoded === "string" || typeof decoded.worldID !== "string" || !decoded.worldID){
+            return next(new AppError(401, "Invalid authentication token"));
+        }
+
+        // append the worldID
+        req.worldID = decoded.worldID;
+
+        return next();
+
+    } catch {
+        return next(new AppError(401, "Invalid authentication token"));
     }
-
-    // append the worldID
-    req.worldID = decoded.worldID;
-
-    next();
 }
