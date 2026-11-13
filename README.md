@@ -124,11 +124,10 @@ backend/
 
 4. Edit the environment variables in `.env` including your Neon PostgreSQL connection details.
 
-5. Apply the schema (including the nullable city snapshot for existing worlds), then generate the Prisma Client:
+5. Generate the Prisma Client:
 
    ```bash
-   npx prisma db push --config prisma7.config.ts
-   npx prisma generate --config prisma7.config.ts
+   npx prisma generate or npm run prisma:generate
    ```
 
 6. Start the development server:
