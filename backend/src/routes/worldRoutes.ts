@@ -73,7 +73,7 @@ worldRouter.post("/login", async(req, res, next) => {
         
         const { passwordHash, ...safeWorld } = world; // removes passwordHash from the response object
 
-        return res.status(201).json({
+        return res.status(200).json({
             success: true,
             data: safeWorld
         });
