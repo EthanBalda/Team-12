@@ -78,7 +78,7 @@ describe("LoginWorldScreenController", () => {
 
         await vi.waitFor(() => {
             expect(screenSwitcher.switchToScreen).toHaveBeenCalledWith({
-                type: "mainGame",
+                type: "loadGame",
             });
         });
 
@@ -243,7 +243,7 @@ describe("LoginWorldScreenController", () => {
 
         await vi.waitFor(() => {
             expect(screenSwitcher.switchToScreen).toHaveBeenCalledWith({
-                type: "mainGame",
+                type: "loadGame",
             });
         });
 
