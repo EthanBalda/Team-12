@@ -1,6 +1,7 @@
 import { comparePassword, hashPassword } from "../libs/bcrypt";
 import { AppError } from "../middleware/errorHandler";
 import { getWorldByWorldId, insertWorld } from "../repositories/worldRepository";
+import type { WorldState, YearSummary } from "../types/worldTypes";
 
 export async function createWorld(worldID: string, password: string, name: string){
     // check database to see if world already exists based on worldID.
@@ -37,4 +38,22 @@ export async function loginWorld(worldID: string, password: string){
     }
 
     return world;
+}
+
+// Compares the world's statistics before and after advancing a year.
+export function calculateYearSummary(
+  previousState: WorldState,
+  currentState: WorldState
+): YearSummary {
+  return {
+    year: currentState.year,
+    previousState: { ...previousState },
+    currentState: { ...currentState },
+    changes: {
+      money: currentState.money - previousState.money,
+      happiness: currentState.happiness - previousState.happiness,
+      population: currentState.population - previousState.population,
+      pollution: currentState.pollution - previousState.pollution,
+    },
+  };
 }

@@ -1,6 +1,6 @@
 
 import { describe, it, expect } from "vitest";
-import { calculateYearSummary } from "../../../services/calculateYearSummary";
+import { calculateYearSummary } from "../../../services/worldServices";
 import type { WorldState } from "../../../types/worldTypes";
 
 // Group together tests for the yearly summary function.

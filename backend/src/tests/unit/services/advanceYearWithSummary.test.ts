@@ -1,14 +1,19 @@
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { advanceYearWithSummary } from "../../../services/advanceYearWithSummary";
 import type { WorldState } from "../../../types/worldTypes";
+import { saveCityState } from "../../../repositories/worldRepository";
+
+vi.mock("../../../repositories/worldRepository", () => ({
+  saveCityState: vi.fn(),
+}));
 
 // Tests the complete process of advancing a year
 // and generating a summary of the city's changes.
 describe("advanceYearWithSummary", () => {
 
   // Test that advancing a year returns the correct summary.
-  it("should advance the year and return a summary", () => {
+  it("should advance the year and return a summary", async () => {
 
     // Create a sample city starting in Year 1.
     const world: WorldState = {
@@ -20,7 +25,12 @@ describe("advanceYearWithSummary", () => {
     };
 
     // Advance the world by one year and generate its summary.
-    const summary = advanceYearWithSummary(world);
+    const summary = await advanceYearWithSummary("test-world", world);
+
+    expect(saveCityState).toHaveBeenCalledWith(
+      "test-world",
+      summary.currentState
+    );
 
     // Check that the game advanced to Year 2.
     expect(summary.year).toBe(2);

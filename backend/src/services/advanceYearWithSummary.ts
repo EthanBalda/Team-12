@@ -2,10 +2,14 @@
 import type { WorldState } from "../types/worldTypes";
 import type { YearSummary } from "../types/worldTypes";
 import { advanceYear } from "./advanceYear";
-import { calculateYearSummary } from "./calculateYearSummary";
+import { calculateYearSummary } from "./worldServices";
+import { saveCityState } from "../repositories/worldRepository";
 
 // Advances the game by one year and generates a summary of the results.
-export function advanceYearWithSummary(world: WorldState): YearSummary {
+export async function advanceYearWithSummary(
+  worldID: string,
+  world: WorldState
+): Promise<YearSummary> {
 
   // Save a copy of the world before advancing the year.
   // This lets us compare the original statistics with the updated ones.
@@ -18,6 +22,9 @@ export function advanceYearWithSummary(world: WorldState): YearSummary {
 
   // Compare the old and new world states to calculate yearly changes.
   const summary = calculateYearSummary(previousState, currentState);
+
+  // Save the updated year and city statistics to the database.
+  await saveCityState(worldID, { ...currentState });
 
   // Return the summary so the game can display the results to the player.
   return summary;
