@@ -14,6 +14,7 @@ import { compareScreenController } from "../CompareScreen/CompareScreenControlle
 import type { Build } from "../CompareScreen/CompareScreenModel";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
 import type { MiniGameResult } from "../../MiniGames/types.ts";
+import { MINIGAME_CHOICES } from "../../MiniGames/registry.ts";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
@@ -35,29 +36,30 @@ export class MainGameScreenController extends ScreenController {
     this.view = new MainGameScreenView(
       () => this.openCompare(),
       () => this.handleEndYear(),
-      () => {
+      (id) => {
         if (this.weatherOverlay === null) {
-          this.screenSwitcher.switchToScreen({ type: "miniGame", id: "trivia" });
+          this.screenSwitcher.switchToScreen({ type: "miniGame", id });
         }
       },
       async () => {
-      try {
-        await this.saveGame();
-        const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/logout`, {
-          method: "POST",
-          credentials: "include",
-        });
+        try {
+          await this.saveGame();
+          const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/logout`, {
+            method: "POST",
+            credentials: "include",
+          });
 
-        if (!response.ok) {
-          throw new Error("Logout failed");
+          if (!response.ok) {
+            throw new Error("Logout failed");
+          }
+
+          window.location.reload();
+        } catch (error) {
+          console.error("Logout failed:", error);
+          this.view.showMessage("Logout failed. Please try again.");
         }
-
-        window.location.reload();
-      } catch (error) {
-        console.error("Logout failed:", error);
-        this.view.showMessage("Logout failed. Please try again.");
-      }
-    },
+      },
+        MINIGAME_CHOICES,
     );
 
     

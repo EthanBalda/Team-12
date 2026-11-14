@@ -18,7 +18,7 @@ export class MiniGameScreenController extends ScreenController {
         super();
         this.screenSwitcher = screenSwitcher;
         this.onComplete = onComplete;
-        this.view = new MiniGameScreenView(() => this.returnToCity());
+        this.view = new MiniGameScreenView(() => this.askToQuit());
     }
 
     play(id: MiniGameId): void {
@@ -40,6 +40,25 @@ export class MiniGameScreenController extends ScreenController {
                 this.returnToCity();
             },
         });
+    }
+
+    // Quitting gives no reward, so the game pauses and the player confirms first.
+    private askToQuit(): void {
+        if (!this.current) {
+            this.returnToCity();
+            return;
+        }
+
+        this.current.pause();
+        this.view.showQuitDialog(
+            () => this.returnToCity(),
+            () => this.keepPlaying(),
+        );
+    }
+
+    private keepPlaying(): void {
+        this.view.hideQuitDialog();
+        this.current?.resume();
     }
 
     // switchToScreen calls hide(), which destroys the current game
