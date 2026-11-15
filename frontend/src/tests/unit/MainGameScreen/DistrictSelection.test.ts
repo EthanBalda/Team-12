@@ -58,6 +58,8 @@ it("highlights South and purchases the next building there through Build", () =>
 
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "South");
+  clickButton(group, "Confirm purchase");
   expect(build).toHaveBeenCalledWith(expect.any(Object), "south");
   expect(build).toHaveReturnedWith(true);
   const purchasedName = build.mock.calls[0]![0].name;
@@ -172,9 +174,13 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   controller.startGame(true);
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "North");             
+  clickButton(group, "Confirm purchase");  
   group.findOne(".district-south")!.fire("click");
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "South");             
+  clickButton(group, "Confirm purchase");  
   const tooltip = group.findOne<Konva.Label>(".building-tooltip")!;
   group.findOne(".building-1")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 50/50");
@@ -218,6 +224,8 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   expect(restoredTooltip.getText().text()).toBe(tooltip.getText().text());
   clickButton(restoredGroup, "Build");
   clickButton(restoredGroup, "Select");
+  clickButton(restoredGroup, "North");             
+  clickButton(restoredGroup, "Confirm purchase");  
   await vi.waitFor(() => {
     expect(saved?.buildings?.map((building) => building.id)).toEqual(["building-2", "building-3"]);
   });

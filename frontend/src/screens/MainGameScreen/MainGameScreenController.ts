@@ -65,7 +65,7 @@ export class MainGameScreenController extends ScreenController {
     
     this.compareController = new compareScreenController(
       screenSwitcher,
-      (build) => this.handleCompareSelect(build),
+      (build, district) => this.handleCompareSelect(build, district),
       () => this.closeCompare(),
     );
 
@@ -167,17 +167,22 @@ export class MainGameScreenController extends ScreenController {
     this.view.getGroup().getLayer()?.draw();
   }
 
-  private handleCompareSelect(build: Build): boolean {
+  private handleCompareSelect(build: Build, district: string): boolean {
     if (this.weatherOverlay !== null) return false;
 
-    if (!this.model.build(build, this.view.getSelectedDistrict())) {
-      this.view.showMessage("Not enough money!"); // stay open so they can pick the other
+    const selectedDistrict = DISTRICTS.find((value) => value === district);
+    if (!selectedDistrict) return false;
+
+    if (!this.model.build(build, selectedDistrict)) {
+      this.view.showMessage("Not enough money!");
       return false;
     }
 
     this.closeCompare();
     this.refreshView();
-    this.view.showMessage(`Built ${build.name} in ${this.view.getSelectedDistrict().toUpperCase()}`);
+    this.view.showMessage(
+      `Built ${build.name} in ${selectedDistrict.toUpperCase()}`,
+    );
     return true;
   }
 

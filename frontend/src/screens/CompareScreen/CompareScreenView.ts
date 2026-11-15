@@ -33,8 +33,14 @@ export class compareScreenView implements View {
 	private panels: Panel[] = [];
 	//private messageText: Konva.Text;
 	private moneyText: Konva.Text;
+	private districtDialog: Konva.Group;
+	private selectedBuildIndex: number | null = null;
+	private selectedDistrict: string | null = null;
 
-	constructor(onSelect: (index: number) => void, onCancel: () => void) {
+	constructor(
+		onSelect: (index: number, district: string) => boolean,
+		onCancel: () => void,
+	) {
 		this.group = new Konva.Group({ visible: true });
 
 		// Title (top of screen)
@@ -63,9 +69,200 @@ export class compareScreenView implements View {
 		});
 		this.group.add(this.moneyText);
 
+		this.districtDialog = new Konva.Group({visible: false});
+
+		this.districtDialog.add(
+			new Konva.Rect({
+				x: (STAGE_WIDTH - 600) / 2,
+				y: (STAGE_HEIGHT - 300) / 2,
+				width: 600,
+				height: 370,
+				fill: "#FFFDF5",
+				stroke: "#E0E4DE",
+				strokeWidth: 1,
+				cornerRadius: 18,
+				shadowColor: "black",
+				shadowBlur: 24,
+				shadowOpacity: 0.18,
+				shadowOffsetY: 8,
+			}),
+		);
+
+		const districts = ["North", "East", "South", "West"];
+		const colors = ["#3b6ea8", "#b7791f", "#38805a", "#8056a3"];
+
+
+		districts.forEach((district, index) => {
+			const button = new Konva.Group({
+				x: (STAGE_WIDTH - 320) / 2,
+				y: (STAGE_HEIGHT - 300) / 2 + 70 + index * 55,
+			});
+
+			button.name("district-option");
+
+			button.add(
+				new Konva.Rect({
+				width: 320,
+				height: 46,
+				fill: colors[index]!,
+				stroke: colors[index]!,
+				strokeWidth: 1,
+				cornerRadius: 10,
+			}),
+			new Konva.Text({
+				width: 320,
+				height: 46,
+				text: district,
+				fontSize: 20,
+				fontFamily: "Arial",
+				fontStyle: "bold",
+				fill: "white",
+				align: "center",
+				verticalAlign: "middle",
+				listening: false,
+			}),
+		);
+			button.on("click tap", () => {
+				this.selectedDistrict = district.toLowerCase();
+
+				this.districtDialog.find(".district-option").forEach((option) => {
+					const rect = (option as Konva.Group).findOne<Konva.Rect>("Rect")!;
+					rect.strokeWidth(1);
+					rect.stroke(rect.fill());
+				});
+
+				const rect = button.findOne<Konva.Rect>("Rect")!;
+				rect.stroke("#14235D");
+				rect.strokeWidth(4);
+
+				this.group.getLayer()?.batchDraw();
+			});
+
+			this.districtDialog.add(button);
+		});
+
+
+		const dialogCancel = new Konva.Group({
+			name: "district-cancel",
+			x: (STAGE_WIDTH - 600) / 2 + 490,
+			y: (STAGE_HEIGHT - 300) / 2 + 20,
+		});
+
+		dialogCancel.add(
+			new Konva.Rect({
+				width: 90,
+				height: 36,
+				fill: "#ECEFF1",
+				cornerRadius: 8,
+			}),
+			new Konva.Text({
+				width: 90,
+				height: 36,
+				text: "Cancel",
+				fontSize: 16,
+				fontStyle: "bold",
+				fill: "#14235D",
+				align: "center",
+				verticalAlign: "middle",
+				listening: false,
+			}),
+		);
+
+		dialogCancel.on("click tap", () => {
+			this.districtDialog.hide();
+			this.selectedBuildIndex = null;
+			this.selectedDistrict = null;
+			this.districtDialog.find(".district-option").forEach((option) => {
+				const rect = (option as Konva.Group).findOne<Konva.Rect>("Rect")!;
+				rect.strokeWidth(1);
+				rect.stroke(rect.fill());
+			});
+			this.group.getLayer()?.batchDraw();
+		});
+
+		this.districtDialog.add(dialogCancel);
+
+		const confirm = new Konva.Group({
+			x: (STAGE_WIDTH - 200) / 2,
+			y: (STAGE_HEIGHT - 300) / 2 + 305,
+		});
+
+		confirm.add(
+			new Konva.Rect({
+				width: 200,
+				height: 45,
+				fill: "#00B5A5",
+				cornerRadius: 10,
+			}),
+			new Konva.Text({
+				width: 200,
+				height: 45,
+				text: "Confirm purchase",
+				fontSize: 18,
+				fontStyle: "bold",
+				fill: "white",
+				align: "center",
+				verticalAlign: "middle",
+				listening: false,
+			}),
+		);
+
+		confirm.on("click tap", () => {
+		if (
+			this.selectedBuildIndex === null ||
+			this.selectedDistrict === null
+		) {
+			return;
+		}
+
+		const purchased = onSelect(
+			this.selectedBuildIndex,
+			this.selectedDistrict,
+		);
+
+		if (purchased) {
+			this.districtDialog.hide();
+			this.selectedBuildIndex = null;
+			this.selectedDistrict = null;
+			this.group.getLayer()?.batchDraw();
+		}
+	});
+
+		this.districtDialog.add(confirm);
+
+
+		this.group.add(this.districtDialog);
+		this.districtDialog.add(
+			new Konva.Text({
+				x: (STAGE_WIDTH - 600) / 2,
+				y: (STAGE_HEIGHT - 300) / 2 + 25,
+				width: 600,
+				text: "Choose a district",
+				fontSize: 26,
+				fontFamily: "Arial",
+				align: "center",
+				fill: "#14235D",
+				fontStyle: "bold",
+				listening: false,
+			}),
+		);
+
 		for (let i = 0; i < CHOICE_COUNT; i++) {
 			const x = SIDE_MARGIN + i * (PANEL_WIDTH + PANEL_GAP);
-			const panel = this.createPanel(x, () => onSelect(i));
+			const panel = this.createPanel(x, () => {
+				this.selectedBuildIndex = i;
+				this.selectedDistrict = null;
+
+				this.districtDialog.find(".district-option").forEach((option) => {
+					const rect = (option as Konva.Group).findOne<Konva.Rect>("Rect")!;
+					rect.strokeWidth(1);
+					rect.stroke(rect.fill());
+				});
+
+				this.districtDialog.show();
+				this.districtDialog.moveToTop();
+				this.group.getLayer()?.batchDraw();
+			});
 			this.panels.push(panel);
 			this.group.add(panel.group);
 		};
@@ -100,7 +297,12 @@ export class compareScreenView implements View {
 				listening: false,
 				}),
 			);
-			cancel.on("click tap", onCancel);
+			cancel.on("click tap", () => {
+				this.districtDialog.hide();
+				this.selectedBuildIndex = null;
+				this.selectedDistrict = null;
+				onCancel();
+			});
 			this.group.add(cancel);
 
 	}
