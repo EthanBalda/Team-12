@@ -179,7 +179,7 @@ export class MainGameScreenController extends ScreenController {
     return true;
   }
 
-  private handleEndYear(): void {
+  private async handleEndYear(): Promise<void> {
     if (this.weatherOverlay !== null) {
       return;
     }
@@ -192,6 +192,43 @@ export class MainGameScreenController extends ScreenController {
 
     // Get the updated stats after advancing the year.
     const stats = this.model.getStats();
+
+    // Ask the backend whether the game has ended.
+    try {
+      const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/game-over`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pollution: stats.pollution,
+          money: stats.money,
+          population: stats.population,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to check game-over conditions");
+      }
+
+      const result = await response.json();
+
+      if (result.gameOver) {
+        this.refreshView();
+
+        this.screenSwitcher.switchToScreen({
+            type: "result",
+            success: false,
+            reason: result.reason,
+            stats: stats,
+        });
+
+        return;
+      }
+    } catch (error) {
+      console.error("Game-over check failed:", error);
+      this.view.showMessage("Could not check game status. Please try again.");
+      return;
+    }
 
     // Calculate how much each stat changed.
     const populationChange = stats.population - previousStats.population;

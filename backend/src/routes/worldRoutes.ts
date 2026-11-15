@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import { createWorld, loginWorld } from '../services/worldServices';
+import { createWorld, loginWorld, checkGameOver } from '../services/worldServices';
 import { CreateWorldRequest, LoginWorldRequest } from '../types/requestTypes';
 import { AppError } from '../middleware/errorHandler';
 import { generateWorldToken } from '../libs/jwt';
@@ -112,6 +112,30 @@ worldRouter.put("/state", authenticateWorld, async (req, res, next) => {
         validateCityState(req.body);
         await saveCityState(req.worldID!, req.body);
         return res.json({ success: true });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Check whether the city has reached a game-over condition.
+worldRouter.post("/game-over", authenticateWorld, (req, res, next) => {
+    try {
+        const { pollution, money, population } = req.body;
+
+        if (
+            !Number.isFinite(pollution) ||
+            !Number.isFinite(money) ||
+            !Number.isFinite(population)
+        ) {
+            throw new AppError(400, "Invalid city statistics");
+        }
+
+        const reason = checkGameOver({ pollution, money, population });
+
+        return res.json({
+            gameOver: reason !== null,
+            reason,
+        });
     } catch (error) {
         next(error);
     }

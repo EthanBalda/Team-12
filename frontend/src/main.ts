@@ -137,8 +137,12 @@ class App implements ScreenSwitcher {
 				this.mainGameController.show();
 				break;
 			case "result":
-				this.resultScreenController.showResult(screen.success);
-				break;
+    			this.resultScreenController.showResult(
+        			screen.success,
+        			screen.reason,
+        			screen.stats
+    			);
+    			break;
 			case "comparison":
 				this.compareScreenController.show();
 				break;

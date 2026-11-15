@@ -57,3 +57,16 @@ export function calculateYearSummary(
     },
   };
 }
+
+// Checks whether the city has reached a game-over condition.
+export function checkGameOver(stats: {
+  pollution: number;
+  money: number;
+  population: number;
+}): string | null {
+  if (stats.pollution >= 100) return "pollution";
+  if (stats.money < 0) return "bankruptcy";
+  if (stats.population < 0) return "population";
+
+  return null;
+}
