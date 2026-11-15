@@ -26,7 +26,24 @@ export class ResultScreenController extends ScreenController{
         this.screenSwitcher.switchToScreen({type: "mainGame"})
     }
 
-    showResult(success: boolean): void {
+    showResult(
+        success: boolean,
+        reason?: string,
+        stats?: {
+            year: number;
+            money: number;
+            population: number;
+            pollution: number;
+        }
+    ): void {
+        if (!success && reason) {
+            this.view.setLossReason(reason);
+        }
+
+        if (stats) {
+            this.view.setFinalStats(stats);
+        }
+
         this.view.show_result(success);
     }
 

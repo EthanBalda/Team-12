@@ -179,20 +179,43 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   group.findOne(".building-1")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 50/50");
 
-  const resolveAnnualFlood = () => {
+  const resolveAnnualFlood = async () => {
     clickButton(group, "End Year");
+
+    await vi.waitFor(() => {
+      expect(
+        group.findOne(
+          (node: Konva.Node) =>
+            node instanceof Konva.Text &&
+            node.text() === "Face the Flood" &&
+            node.isVisible()
+        )
+      ).toBeDefined();
+    });
+
     clickButton(group, "Face the Flood");
     clickButton(group, "Return to City");
   };
-  resolveAnnualFlood(); // North floods first, even though South is selected.
-  expect(tooltip.visible()).toBe(false);
+  await resolveAnnualFlood(); // North floods first, even though South is selected.  expect(tooltip.visible()).toBe(false);
   expect(view.getSelectedDistrict()).toBe("south");
   group.findOne(".building-1")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 10/50");
   group.findOne(".building-2")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 50/50");
-  for (let i = 0; i < 3; i++) resolveAnnualFlood(); // South, East, West.
+  for (let i = 0; i < 3; i++) await resolveAnnualFlood(); // South, East, West.  
   clickButton(group, "End Year"); // North again.
+
+  await vi.waitFor(() => {
+    expect(
+      group.findOne(
+        (node: Konva.Node) =>
+          node instanceof Konva.Text &&
+          node.text() === "Face the Flood" &&
+          node.isVisible()
+      )
+    ).toBeDefined();
+  });
+
   clickButton(group, "Face the Flood");
   // Save the damage even if the player reloads before returning from flood results.
   await vi.waitFor(() => {

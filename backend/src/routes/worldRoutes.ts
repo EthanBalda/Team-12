@@ -1,5 +1,6 @@
+
 import express, { type Request, type Response } from 'express';
-import { createWorld, loginWorld } from '../services/worldServices';
+import { createWorld, loginWorld, checkGameOver } from '../services/worldServices';
 import { CreateWorldRequest, LoginWorldRequest } from '../types/requestTypes';
 import { AppError } from '../middleware/errorHandler';
 import { generateWorldToken } from '../libs/jwt';
@@ -21,10 +22,10 @@ const worldRouter = express.Router();
  * World Object
  */
 worldRouter.post("/create", async (req, res, next) => {
-    try{
+    try {
         const { worldID, password, name }: CreateWorldRequest = req.body;
 
-        if(worldID.length == 0 || password.length == 0){
+        if (worldID.length == 0 || password.length == 0) {
             throw new AppError(400, "Inputs cannot be empty");
         }
 
@@ -37,26 +38,26 @@ worldRouter.post("/create", async (req, res, next) => {
             httpOnly: true,
             secure: false, // we are never going to be hosting this anywhere so it should be fine
             sameSite: "lax",
-            maxAge: 7*24*60*60, // like 7 days should be good
+            maxAge: 7 * 24 * 60 * 60, // like 7 days should be good
         });
-        
-        const { passwordHash, ...safeWorld } = world; // removes passwordHash from the response object
+
+        const { passwordHash, ...safeWorld } = world;
 
         return res.status(201).json({
             success: true,
             data: safeWorld
         });
 
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 });
 
-worldRouter.post("/login", async(req, res, next) => {
-    try{
+worldRouter.post("/login", async (req, res, next) => {
+    try {
         const { worldID, password }: LoginWorldRequest = req.body;
 
-        if(worldID.length == 0 || password.length == 0){
+        if (worldID.length == 0 || password.length == 0) {
             throw new AppError(400, "Inputs cannot be empty");
         }
 
@@ -67,26 +68,25 @@ worldRouter.post("/login", async(req, res, next) => {
         // attach jwt as http only cookie
         res.cookie("world_token", token, {
             httpOnly: true,
-            secure: false, // we are never going to be hosting this anywhere so it should be fine
+            secure: false,
             sameSite: "lax",
-            maxAge: 7*24*60*60, // like 7 days should be good
+            maxAge: 7 * 24 * 60 * 60,
         });
-        
-        const { passwordHash, ...safeWorld } = world; // removes passwordHash from the response object
+
+        const { passwordHash, ...safeWorld } = world;
 
         return res.status(200).json({
             success: true,
             data: safeWorld
         });
 
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 });
 
-worldRouter.get("/me", authenticateWorld, async(req, res, next) => {
-    
-    try{
+worldRouter.get("/me", authenticateWorld, async (req, res, next) => {
+    try {
         return res.status(200).json({
             success: true,
             worldID: req.worldID,
@@ -94,14 +94,19 @@ worldRouter.get("/me", authenticateWorld, async(req, res, next) => {
     } catch (error) {
         next(error);
     }
-
 });
 
 worldRouter.get("/state", authenticateWorld, async (req, res, next) => {
     try {
         const world = await getWorldByWorldId(req.worldID!);
-        if (!world) throw new AppError(404, "World not found");
-        return res.json({ cityState: world.cityState ?? null });
+
+        if (!world) {
+            throw new AppError(404, "World not found");
+        }
+
+        return res.json({
+            cityState: world.cityState ?? null
+        });
     } catch (error) {
         next(error);
     }
@@ -111,7 +116,42 @@ worldRouter.put("/state", authenticateWorld, async (req, res, next) => {
     try {
         validateCityState(req.body);
         await saveCityState(req.worldID!, req.body);
-        return res.json({ success: true });
+
+        return res.json({
+            success: true
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Check whether the city has reached a game-over condition.
+worldRouter.post("/game-over", authenticateWorld, (req, res, next) => {
+    try {
+        const { pollution, money, population, year } = req.body;
+
+        if (
+            !Number.isFinite(pollution) ||
+            !Number.isFinite(money) ||
+            !Number.isFinite(population) ||
+            !Number.isInteger(year) ||
+            year < 1
+        ) {
+            throw new AppError(400, "Invalid city statistics");
+        }
+
+        const reason = checkGameOver({
+            pollution,
+            money,
+            population,
+            year,
+        });
+
+        return res.json({
+            gameOver: reason !== null,
+            success: reason === "victory",
+            reason,
+        });
     } catch (error) {
         next(error);
     }
@@ -134,6 +174,5 @@ worldRouter.post("/logout", (req: Request, res: Response) => {
 // worldRouter.get("/stats", authenticateWorld, async(req, res, next) => {
 
 // });
-
 
 export default worldRouter;

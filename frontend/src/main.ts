@@ -180,7 +180,7 @@ class App implements ScreenSwitcher {
                 break;
 
             case "result":
-                this.resultScreenController.showResult(screen.success);
+                this.resultScreenController.showResult(screen.success, screen.reason, screen.stats);
                 break;
 
             case "comparison":

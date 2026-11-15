@@ -1,6 +1,7 @@
 import { comparePassword, hashPassword } from "../libs/bcrypt";
 import { AppError } from "../middleware/errorHandler";
 import { getWorldByWorldId, insertWorld } from "../repositories/worldRepository";
+import type { WorldState, YearSummary } from "../types/worldTypes";
 
 export async function createWorld(worldID: string, password: string, name: string){
     // check database to see if world already exists based on worldID.
@@ -37,4 +38,39 @@ export async function loginWorld(worldID: string, password: string){
     }
 
     return world;
+}
+
+// Compares the world's statistics before and after advancing a year.
+export function calculateYearSummary(
+  previousState: WorldState,
+  currentState: WorldState
+): YearSummary {
+  return {
+    year: currentState.year,
+    previousState: { ...previousState },
+    currentState: { ...currentState },
+    changes: {
+      money: currentState.money - previousState.money,
+      happiness: currentState.happiness - previousState.happiness,
+      population: currentState.population - previousState.population,
+      pollution: currentState.pollution - previousState.pollution,
+    },
+  };
+}
+
+
+// Checks whether the city has reached a game-over condition.
+export function checkGameOver(stats: {
+  pollution: number;
+  money: number;
+  population: number;
+  year: number;
+}): string | null {
+  if (stats.pollution >= 100) return "pollution";
+  if (stats.money < 0) return "bankruptcy";
+  if (stats.population < 0) return "population";
+
+  if (stats.year >= 11) return "victory";
+
+  return null;
 }
