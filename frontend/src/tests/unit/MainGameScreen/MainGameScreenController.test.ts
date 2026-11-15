@@ -7,7 +7,7 @@ import type { MainGameScreenView } from "../../../screens/MainGameScreen/MainGam
 vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
   // Use a class because the controller creates the view with "new".
   MainGameScreenView: class {
-    clickEndYear: () => void;
+    clickEndYear: () => Promise<void>;
 
     updateStats = vi.fn();
     updateYear = vi.fn();
@@ -16,7 +16,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
 
     constructor(
       _onBuild: unknown,
-      onEndYear: () => void,
+      onEndYear: () => Promise<void>,
       _onMinigame: unknown
     ) {
       // Save the callback so our test can simulate the button click.
@@ -26,7 +26,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
 }));
 
 describe("MainGameScreenController - End Year", () => {
-  it("should display the yearly changes when End Year is clicked", () => {
+  it("should display the yearly changes when End Year is clicked", async () => {
     // Create the controller with a mock screen switcher.
     const screenSwitcher = {
       switchToScreen: vi.fn(),
@@ -44,7 +44,7 @@ describe("MainGameScreenController - End Year", () => {
       clickEndYear: () => void;
     };
 
-    view.clickEndYear();
+    await view.clickEndYear();
 
     // Verify the year was updated on the screen.
     expect(view.updateYear).toHaveBeenCalledWith(2);

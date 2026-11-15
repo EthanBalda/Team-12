@@ -226,8 +226,6 @@ export class MainGameScreenController extends ScreenController {
       }
     } catch (error) {
       console.error("Game-over check failed:", error);
-      this.view.showMessage("Could not check game status. Please try again.");
-      return;
     }
 
     // Calculate how much each stat changed.

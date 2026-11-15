@@ -74,7 +74,7 @@ vi.mock("../../../screens/WeatherEventScreen/WeatherEventScreenView", () => ({
 
 const gameView = vi.hoisted(() => ({
     onBuild: (_type: BuildingType) => {},
-    onEndYear: () => {},
+    onEndYear: async () => {},
     updateStats: vi.fn(),
     updateYear: vi.fn(),
     updateBuildings: vi.fn(),
@@ -91,7 +91,7 @@ vi.mock(
             getGroup() { return this.group; }
             constructor(
                 onBuild: (type: BuildingType) => void,
-                onEndYear: () => void,
+                onEndYear: () => Promise<void>,
             ) {
                 gameView.onBuild = onBuild;
                 gameView.onEndYear = onEndYear;
@@ -118,7 +118,7 @@ describe("Result screen game flow", () => {
         year: 2,
     };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
 
         // Connect the controllers using the same routes as main.ts.
@@ -146,10 +146,11 @@ describe("Result screen game flow", () => {
 
         // Change every stat before testing Continue or Restart.
         gameView.onBuild("housing");
-        gameView.onEndYear();
+        await gameView.onEndYear();
+
         // Resolve and leave the annual weather event through its real controller.
         weatherView.onContinue();
-        weatherView.onContinue();
+        weatherView.onContinue();  
 
         expect(gameView.updateStats).toHaveBeenLastCalledWith(
             progressedStats,
