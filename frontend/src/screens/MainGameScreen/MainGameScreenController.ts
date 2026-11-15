@@ -203,7 +203,8 @@ export class MainGameScreenController extends ScreenController {
           pollution: stats.pollution,
           money: stats.money,
           population: stats.population,
-        }),
+          year: stats.year
+      }),
       });
 
       if (!response.ok) {
@@ -214,14 +215,12 @@ export class MainGameScreenController extends ScreenController {
 
       if (result.gameOver) {
         this.refreshView();
-
         this.screenSwitcher.switchToScreen({
             type: "result",
-            success: false,
+            success: result.success,
             reason: result.reason,
-            stats: stats,
+            stats: stats
         });
-
         return;
       }
     } catch (error) {
