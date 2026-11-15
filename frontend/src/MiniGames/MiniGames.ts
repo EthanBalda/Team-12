@@ -8,7 +8,8 @@ import type { MiniGameContext, MiniGameResult } from "./types.ts";
  * Subclasses implement `title` and `setup()`, draw into `this.ctx.group`,
  * and call `this.finish(result)` once when the game ends. Timers, animations,
  * and window listeners created through the helpers below are cleaned up
- * automatically by `destroy()`.
+ * automatically by `destroy()`. The host can pause and resume a game, which
+ * stops and restarts its animations. Timeouts keep running while paused.
  */
 export abstract class MiniGame {
     abstract readonly title: string;
@@ -16,12 +17,16 @@ export abstract class MiniGame {
     protected ctx!: MiniGameContext;
     private finished = false;
     private cleanups: (() => void)[] = [];
+    private animations: Konva.Animation[] = [];
+    private paused = false;
 
     /** Called by the host. Subclasses override setup(), not this. */
     start(ctx: MiniGameContext): void {
         this.ctx = ctx;
         this.finished = false;
         this.cleanups = [];
+        this.animations = [];
+        this.paused = false;
         this.setup();
         this.redraw();
     }
@@ -40,12 +45,26 @@ export abstract class MiniGame {
         return this.finished;
     }
 
+    /** Called by the host, for example while the quit dialog is open. */
+    pause(): void {
+        if (this.paused || this.finished) return;
+        this.paused = true;
+        for (const animation of this.animations) animation.stop();
+    }
+
+    resume(): void {
+        if (!this.paused) return;
+        this.paused = false;
+        for (const animation of this.animations) animation.start();
+    }
+
     /** Called by the host when the game ends or the player quits. */
     destroy(): void {
         this.finished = true;
         // reverse order: undo the most recently started thing first
         for (const cleanup of this.cleanups.reverse()) cleanup();
         this.cleanups = [];
+        this.animations = [];
         this.ctx.group.destroyChildren(); // also removes Konva listeners on those shapes
         this.redraw();
     }
@@ -63,6 +82,7 @@ export abstract class MiniGame {
     protected addAnimation(onFrame: (frame: IFrame) => void): Konva.Animation {
         const animation = new Konva.Animation(onFrame, this.ctx.group.getLayer());
         animation.start();
+        this.animations.push(animation);
         this.cleanups.push(() => animation.stop());
         return animation;
     }

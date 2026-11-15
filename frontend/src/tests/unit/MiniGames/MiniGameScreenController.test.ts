@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
         resetCursor: vi.fn(),
         getGameArea: vi.fn(),
         getGameAreaSize: vi.fn(),
+        showQuitDialog: vi.fn<(onConfirm: () => void, onCancel: () => void) => void>(),
+        hideQuitDialog: vi.fn(),
     },
     createGame: vi.fn(),
     onQuit: { current: () => {} },
@@ -30,7 +32,13 @@ vi.mock("../../../MiniGames/registry", () => ({
 }));
 
 function makeGame() {
-    return { title: "Fake", start: vi.fn<(ctx: MiniGameContext) => void>(), destroy: vi.fn() };
+    return {
+        title: "Fake",
+        start: vi.fn<(ctx: MiniGameContext) => void>(),
+        destroy: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+    };
 }
 
 describe("MiniGameScreenController", () => {
@@ -85,14 +93,46 @@ describe("MiniGameScreenController", () => {
         expect(game.destroy).toHaveBeenCalledOnce();
     });
 
-    it("resumes the city with no reward when the player quits", () => {
+    it("pauses the minigame and asks before quitting", () => {
         controller.play("test");
 
         mocks.onQuit.current();
 
+        expect(game.pause).toHaveBeenCalledOnce();
+        expect(mocks.view.showQuitDialog).toHaveBeenCalledOnce();
+        expect(switchToScreen).not.toHaveBeenCalled();
+        expect(game.destroy).not.toHaveBeenCalled();
+    });
+
+    it("resumes the city with no reward when the player confirms quitting", () => {
+        controller.play("test");
+        mocks.onQuit.current();
+
+        const [confirm] = mocks.view.showQuitDialog.mock.calls[0]!;
+        confirm();
+
         expect(onComplete).not.toHaveBeenCalled();
         expect(switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "resumeGame" });
         expect(game.destroy).toHaveBeenCalledOnce();
+    });
+
+    it("goes back to the minigame when the player keeps playing", () => {
+        controller.play("test");
+        mocks.onQuit.current();
+
+        const [, cancel] = mocks.view.showQuitDialog.mock.calls[0]!;
+        cancel();
+
+        expect(mocks.view.hideQuitDialog).toHaveBeenCalledOnce();
+        expect(game.resume).toHaveBeenCalledOnce();
+        expect(switchToScreen).not.toHaveBeenCalled();
+    });
+
+    it("leaves right away when no minigame is running", () => {
+        mocks.onQuit.current();
+
+        expect(mocks.view.showQuitDialog).not.toHaveBeenCalled();
+        expect(switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "resumeGame" });
     });
 
     it("can hide when no minigame is running", () => {

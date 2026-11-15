@@ -36,7 +36,9 @@ export type Screen =
 	}
 	| { type: "comparison"}	
 	| { type: "resumeGame"}
-	| { type: "loading"};
+	| { type: "loading"}
+	| { type: "instructions"}
+	| { type: "start"};
 
 
 export abstract class ScreenController {

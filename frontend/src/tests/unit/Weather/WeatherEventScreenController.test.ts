@@ -118,7 +118,7 @@ describe("weather controller integration", () => {
 
     // Calls arriving behind the overlay must not change or leave the city.
     endYear();
-    minigame();
+    minigame("trivia");
     controller.endGame();
     controller.applyMiniGameResult({ delta: { money: 999 }, summary: "blocked" });
     expect(switcher.switchToScreen).not.toHaveBeenCalled();
@@ -132,8 +132,8 @@ describe("weather controller integration", () => {
     expect(WeatherEventScreenView).toHaveBeenCalledTimes(1);
     expect(view.showMessage).toHaveBeenCalledTimes(3);
 
-    minigame();
-    expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "trivia" });
+    minigame("sorting");
+    expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "sorting" });
     controller.applyMiniGameResult({ delta: { money: 20000 }, summary: "reward" });
     controller.show(); // Incoming resumeGame navigation uses show(), not startGame().
     expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget + 20000 }));

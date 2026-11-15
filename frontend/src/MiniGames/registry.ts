@@ -11,6 +11,17 @@ export const MINIGAMES = {
 
 export type MiniGameId = keyof typeof MINIGAMES;
 
+export interface MiniGameChoice {
+    id: MiniGameId;
+    label: string;
+}
+
+/** Games the player can pick on the main screen. The test game is left out. */
+export const MINIGAME_CHOICES: MiniGameChoice[] = [
+    { id: "trivia", label: "Environmental Trivia" },
+    { id: "sorting", label: "Trash Sorting" },
+];
+
 
 
 
