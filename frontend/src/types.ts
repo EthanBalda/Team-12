@@ -23,10 +23,22 @@ export type Screen =
     | { type: "mainGame" }
 	| { type: "miniGame"; id: MiniGameId }
 	| { type: "resumeGame"}
-	| { type: "result"; success: boolean}
+	| {
+		type: "result";
+		success: boolean;
+		reason?: string;
+		stats?: {
+			year: number;
+			money: number;
+			population: number;
+			pollution: number;
+		};
+	}
 	| { type: "comparison"}	
 	| { type: "resumeGame"}
-	| { type: "loading"};
+	| { type: "loading"}
+	| { type: "instructions"}
+	| { type: "start"};
 
 
 export abstract class ScreenController {

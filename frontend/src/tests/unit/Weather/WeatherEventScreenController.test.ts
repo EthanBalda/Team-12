@@ -102,7 +102,7 @@ describe("weather controller integration", () => {
     }));
   });
 
-  it("returns to the same city and preserves minigame navigation and rewards", () => {
+  it("returns to the same city and preserves minigame navigation and rewards", async () => {
     const switcher = { switchToScreen: vi.fn() };
     const controller = new MainGameScreenController(switcher);
     controller.startGame();
@@ -110,7 +110,7 @@ describe("weather controller integration", () => {
     const [build, endYear, minigame] = vi.mocked(MainGameScreenView).mock.calls[0]!;
     build();
     build();
-    endYear();
+    await endYear();
     const [,,, purchase, next] = vi.mocked(WeatherEventScreenView).mock.calls[0]!;
     purchase("sandbags");
     const weatherView = vi.mocked(WeatherEventScreenView).mock.results[0]!.value as WeatherEventScreenView;
