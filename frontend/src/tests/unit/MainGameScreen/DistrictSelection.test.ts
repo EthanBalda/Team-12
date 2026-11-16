@@ -33,6 +33,7 @@ const clickButton = (group: Konva.Group, label: string) => {
   text!.getParent()!.fire("click");
 };
 
+
 it("highlights South and purchases the next building there through Build", () => {
   const build = vi.spyOn(MainGameScreenModel.prototype, "build");
   const controller = new MainGameScreenController({ switchToScreen: vi.fn() });
@@ -58,6 +59,7 @@ it("highlights South and purchases the next building there through Build", () =>
 
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "Confirm")
   expect(build).toHaveBeenCalledWith(expect.any(Object), "south");
   expect(build).toHaveReturnedWith(true);
   const purchasedName = build.mock.calls[0]![0].name;
@@ -172,9 +174,13 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   controller.startGame(true);
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "Confirm");
+
   group.findOne(".district-south")!.fire("click");
+
   clickButton(group, "Build");
   clickButton(group, "Select");
+  clickButton(group, "Confirm");
   const tooltip = group.findOne<Konva.Label>(".building-tooltip")!;
   group.findOne(".building-1")!.fire("mouseenter");
   expect(tooltip.getText().text()).toContain("Health: 50/50");
@@ -241,6 +247,7 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   expect(restoredTooltip.getText().text()).toBe(tooltip.getText().text());
   clickButton(restoredGroup, "Build");
   clickButton(restoredGroup, "Select");
+  clickButton(restoredGroup, "Confirm");
   await vi.waitFor(() => {
     expect(saved?.buildings?.map((building) => building.id)).toEqual(["building-2", "building-3"]);
   });
@@ -273,3 +280,4 @@ it("does not overwrite a saved world when loading fails", async () => {
   expect(switchToScreen).toHaveBeenLastCalledWith({ type: "loginWorld" });
   controller.getView().getGroup().destroy();
 });
+

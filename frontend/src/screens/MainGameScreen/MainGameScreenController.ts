@@ -15,6 +15,7 @@ import type { Build } from "../CompareScreen/CompareScreenModel";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
 import type { MiniGameResult } from "../../MiniGames/types.ts";
 import { MINIGAME_CHOICES } from "../../MiniGames/registry.ts";
+import { ConfirmationScreenView } from "../ConfirmationScreen/ConfirmationScreenView";
 
 export class MainGameScreenController extends ScreenController {
   private model: MainGameScreenModel;
@@ -65,7 +66,7 @@ export class MainGameScreenController extends ScreenController {
     
     this.compareController = new compareScreenController(
       screenSwitcher,
-      (build) => this.handleCompareSelect(build),
+      (build) => this.openPurchaseConfirmation(build),
       () => this.closeCompare(),
     );
 
@@ -167,18 +168,40 @@ export class MainGameScreenController extends ScreenController {
     this.view.getGroup().getLayer()?.draw();
   }
 
-  private handleCompareSelect(build: Build): boolean {
-    if (this.weatherOverlay !== null) return false;
+  private openPurchaseConfirmation(build: Build): boolean {
+    const confirmation = new ConfirmationScreenView(() => {
+      if (this.weatherOverlay !== null) return;
+      if (this.handleCompareSelect(build)) {
+        const group = confirmation.getGroup();
+        const layer = group.getLayer();
+        group.destroy();
+        layer?.batchDraw();
+      }else {
+        return false;
+      }
+    });
 
-    if (!this.model.build(build, this.view.getSelectedDistrict())) {
-      this.view.showMessage("Not enough money!"); // stay open so they can pick the other
-      return false;
-    }
+    confirmation.setPurchaseDetails(build, this.model.getStats().money);
+    this.view.getGroup().add(confirmation.getGroup());
+    confirmation.show();
 
-    this.closeCompare();
-    this.refreshView();
-    this.view.showMessage(`Built ${build.name} in ${this.view.getSelectedDistrict().toUpperCase()}`);
     return true;
+  }
+
+  private handleCompareSelect(build: Build): boolean {
+      if (this.weatherOverlay !== null) return false;
+
+      const district = this.view.getSelectedDistrict();
+
+      if (!this.model.build(build, district)) {
+          this.view.showMessage("Not enough money!");
+          return false;
+      }
+
+      this.closeCompare();
+      this.refreshView();
+      this.view.showMessage(`Built ${build.name} in ${district.toUpperCase()}`);
+      return true;
   }
 
   private async handleEndYear(): Promise<void> {
