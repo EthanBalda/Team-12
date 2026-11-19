@@ -7,14 +7,12 @@ export type District = (typeof DISTRICTS)[number];
 export type BuildingType = string;
 export interface CityBuilding {
   id: string;
-  type: string;            // holds Build.name
+  type: string;
   district: District;
   health: number;
   maxHealth: number;
   populationLoss: number;  // stored per building now
 }
-
-
 
 export interface WeatherDamageResult {
   populationLost: number;
@@ -94,7 +92,10 @@ export class MainGameScreenModel {
 
       if (!this.spendMoney(this.getBuildCost(option))) return false;
 
-      const maxHealth = 25 + option.tier * 25;
+      let maxHealth = 25 + option.tier * 25;
+      if(option.type == "factory"){
+        maxHealth += 25;
+      }
       this.buildings.push({
         id: `building-${this.nextBuildingId}`,
         type: option.name,
@@ -105,10 +106,8 @@ export class MainGameScreenModel {
       });
       this.nextBuildingId++;
 
-      this.pollution = Math.min(
-        100,
-        Math.max(0, this.pollution + option.pollution),
-      );
+      this.pollution = Math.min(100,Math.max(0, this.pollution + option.pollution),);
+      this.population = Math.max(0, this.population + option.populationLoss)
       return true;
     }
 
