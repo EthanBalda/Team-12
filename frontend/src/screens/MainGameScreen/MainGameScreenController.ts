@@ -145,6 +145,7 @@ export class MainGameScreenController extends ScreenController {
     this.weatherOverlay = null;
     this.model = new MainGameScreenModel();
     this.compareController.reset();
+    this.compareController.refreshChoices();
     this.closeCompare();
     this.refreshView();
     this.view.show();
@@ -198,6 +199,7 @@ export class MainGameScreenController extends ScreenController {
           return false;
       }
 
+      this.compareController.refreshChoices();
       this.closeCompare();
       this.refreshView();
       this.view.showMessage(`Built ${build.name} in ${district.toUpperCase()}`);
@@ -261,6 +263,9 @@ export class MainGameScreenController extends ScreenController {
     const YEARS_PER_TIER = 2; // Currently increments tier every two years
     this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
     this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
+
+    // Refresh building after year
+    this.compareController.refreshChoices();
 
     // Update the displayed stats, year, and buildings.
     this.refreshView();
