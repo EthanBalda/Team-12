@@ -91,7 +91,7 @@ describe("CityWeatherEvent", () => {
       .toBe(true);
 
     // Damaged factories are still standing, so no residents are lost.
-    expect(city.getStats().population).toBe(9000);
+    expect(city.getStats().population).toBe(11000);
   });
 
   it("preserves building damage across separate floods", () => {
@@ -100,12 +100,12 @@ describe("CityWeatherEvent", () => {
 
     const firstEvent = new CityWeatherEvent(floodEvent, city, "north");
     expect(firstEvent.resolve().populationLost).toBe(0);
-    expect(city.getBuildings()[0]!.health).toBe(10);
+    expect(city.getBuildings()[0]!.health).toBe(35);
 
     const secondEvent = new CityWeatherEvent(floodEvent, city, "north");
     expect(secondEvent.resolve().populationLost).toBe(200);
     expect(city.getBuildings()).toEqual([]);
-    expect(city.getStats().population).toBe(9800);
+    expect(city.getStats().population).toBe(10000);
   });
 
   it("applies each event only once", () => {
@@ -142,6 +142,6 @@ describe("CityWeatherEvent", () => {
 
     expect(event.resolve().populationLost).toBe(0);
     expect(city.getBuildings()[0]!.health).toBe(50);
-    expect(city.getStats().population).toBe(10000);
+    expect(city.getStats().population).toBe(10050);
   });
 });

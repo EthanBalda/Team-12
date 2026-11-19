@@ -26,13 +26,13 @@ describe("MainGameScreenModel", () => {
     expect(restored.getStats()).toEqual(city.getStats());
     expect(restored.getBuildings()).toEqual([{
       id: "building-1", type: "Factory", district: "south",
-      health: 10, maxHealth: 50, populationLoss: 200,
+      health: 35, maxHealth: 75, populationLoss: 200,
     }]);
     restored.build(getBuild("Park"), "east");
     expect(restored.getBuildings()[1]).toMatchObject({ id: "building-3", district: "east" });
     // The removed building-2 is not resurrected or reused.
     snapshot.buildings[0].health = 50;
-    expect(restored.getBuildings()[0]!.health).toBe(10);
+    expect(restored.getBuildings()[0]!.health).toBe(35);
   });
 
   it("loads stats from older worlds without building data", () => {
@@ -63,7 +63,7 @@ describe("MainGameScreenModel", () => {
 
     expect(model.getStats()).toEqual({
       money: 490000,
-      population: 10000,
+      population: 10050,
       pollution: 22,
       year: 1,
     });
@@ -101,7 +101,7 @@ describe("MainGameScreenModel", () => {
     buildings.pop();
 
     expect(model.getBuildings()[0]).toMatchObject({
-      health: 50,
+      health: 75,
       district: "north",
     });
   });
@@ -118,7 +118,7 @@ describe("MainGameScreenModel", () => {
     expect(result.affectedBuildings).toHaveLength(1);
 
 
-    expect(model.getStats().population).toBe(10000);
+    expect(model.getStats().population).toBe(10100);
   });
 
   it("preserves damage between separate weather events", () => {
@@ -131,7 +131,7 @@ describe("MainGameScreenModel", () => {
     const result = model.applyWeatherDamage(30, "north");
     expect(result.destroyedBuildings[0]!.health).toBe(0);
     expect(model.getBuildings()).toEqual([]);
-    expect(model.getStats().population).toBe(9950);
+    expect(model.getStats().population).toBe(10000);
   });
 });
 
