@@ -25,6 +25,7 @@ export class MainGameScreenView implements View {
   private buildings: CityBuilding[] = [];
   private buildingGroups: Partial<Record<District, Konva.Group>> = {};
   private buildingImages: Record<string, HTMLImageElement> = {};
+  private currentNotice: Konva.Text | null = null;
   private readonly buildingTooltip = new Konva.Label({
     name: "building-tooltip",
     visible: false,
@@ -482,6 +483,9 @@ export class MainGameScreenView implements View {
   }
 
   showMessage(message: string): void {
+
+    this.currentNotice?.destroy();
+
     const notice = new Konva.Text({
       x: 20,
       y: 660,
@@ -493,12 +497,17 @@ export class MainGameScreenView implements View {
       padding: 12,
     });
 
+    this.currentNotice = notice;
+
     this.group.add(notice);
     this.group.getLayer()?.draw();
 
     window.setTimeout(() => {
-      notice.destroy();
-      this.group.getLayer()?.draw();
+      if(this.currentNotice === notice){
+        notice.destroy();
+        this.currentNotice = null;
+        this.group.getLayer()?.draw();
+      }
     }, 2500);
   }
 
