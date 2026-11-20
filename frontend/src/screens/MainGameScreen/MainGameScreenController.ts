@@ -23,6 +23,7 @@ export class MainGameScreenController extends ScreenController {
   private compareController: compareScreenController;
   private compareOverlay: Konva.Group;
   private weatherOverlay: Konva.Group | null = null;
+  private endYearInProgress = false;
   private persistenceEnabled = false;
   private saveQueue: Promise<void> = Promise.resolve();
 
@@ -205,78 +206,83 @@ export class MainGameScreenController extends ScreenController {
   }
 
   private async handleEndYear(): Promise<void> {
-    if (this.weatherOverlay !== null) {
+    if (this.endYearInProgress || this.weatherOverlay !== null) {
       return;
     }
 
-    // Save the city's stats before advancing the year.
-    const previousStats = this.model.getStats();
-
-    // Advance the year and apply the yearly changes.
-    this.model.endYear();
-
-    // Get the updated stats after advancing the year.
-    const stats = this.model.getStats();
-
-    // Ask the backend whether the game has ended.
+    this.endYearInProgress = true;
     try {
-      const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/game-over`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pollution: stats.pollution,
-          money: stats.money,
-          population: stats.population,
-          year: stats.year
-      }),
-      });
+      // Save the city's stats before advancing the year.
+      const previousStats = this.model.getStats();
 
-      if (!response.ok) {
-        throw new Error("Failed to check game-over conditions");
-      }
+      // Advance the year and apply the yearly changes.
+      this.model.endYear();
 
-      const result = await response.json();
+      // Get the updated stats after advancing the year.
+      const stats = this.model.getStats();
 
-      if (result.gameOver) {
-        this.refreshView();
-        this.screenSwitcher.switchToScreen({
-            type: "result",
-            success: result.success,
-            reason: result.reason,
-            stats: stats
+      // Ask the backend whether the game has ended.
+      try {
+        const response = await fetch(`${BACKEND_API_ENDPOINT}/worlds/game-over`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pollution: stats.pollution,
+            money: stats.money,
+            population: stats.population,
+            year: stats.year
+        }),
         });
-        return;
+
+        if (!response.ok) {
+          throw new Error("Failed to check game-over conditions");
+        }
+
+        const result = await response.json();
+
+        if (result.gameOver) {
+          this.refreshView();
+          this.screenSwitcher.switchToScreen({
+              type: "result",
+              success: result.success,
+              reason: result.reason,
+              stats: stats
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Game-over check failed:", error);
       }
-    } catch (error) {
-      console.error("Game-over check failed:", error);
+
+      // Calculate how much each stat changed.
+      const populationChange = stats.population - previousStats.population;
+      const moneyChange = stats.money - previousStats.money;
+      const pollutionChange = stats.pollution - previousStats.pollution;
+
+      // Advance Building Tier
+      const YEARS_PER_TIER = 2; // Currently increments tier every two years
+      this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
+      this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
+
+      // Update the displayed stats, year, and buildings.
+      this.refreshView();
+
+      // Show the player a summary of the year's changes.
+      this.view.showMessage(
+        `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
+        `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
+        `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
+      );
+
+      // Annual floods rotate through districts, starting with north.
+      const districtIndex = (stats.year - 2) % DISTRICTS.length;
+      const district = DISTRICTS[districtIndex]!;
+
+      this.openWeather(district);
+    } finally {
+      this.endYearInProgress = false;
     }
-
-    // Calculate how much each stat changed.
-    const populationChange = stats.population - previousStats.population;
-    const moneyChange = stats.money - previousStats.money;
-    const pollutionChange = stats.pollution - previousStats.pollution;
-
-    // Advance Building Tier
-    const YEARS_PER_TIER = 2; // Currently increments tier every two years
-    this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
-    this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
-
-    // Update the displayed stats, year, and buildings.
-    this.refreshView();
-
-    // Show the player a summary of the year's changes.
-    this.view.showMessage(
-      `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
-      `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
-      `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
-    );
-
-    // Annual floods rotate through districts, starting with north.
-    const districtIndex = (stats.year - 2) % DISTRICTS.length;
-    const district = DISTRICTS[districtIndex]!;
-
-    this.openWeather(district);
   }
 
   private openWeather(district: District): void {
