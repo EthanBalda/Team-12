@@ -26,6 +26,9 @@ export class MainGameScreenView implements View {
   private buildingGroups: Partial<Record<District, Konva.Group>> = {};
   private buildingImages: Record<string, HTMLImageElement> = {};
   private currentNotice: Konva.Text | null = null;
+  private endYearButton!: Konva.Group;
+
+
   private readonly buildingTooltip = new Konva.Label({
     name: "building-tooltip",
     visible: false,
@@ -42,6 +45,8 @@ export class MainGameScreenView implements View {
     align: "right",
     fill: "#14265d",
   });
+
+  
 
   private onMinigame: (id: MiniGameId) => void;
   constructor(
@@ -112,16 +117,16 @@ export class MainGameScreenView implements View {
       () => this.onOpenBuild(),
     );
 
-    this.addButton(
-      this.group,
-      "End Year",
-      STAGE_WIDTH - 210,
-      STAGE_HEIGHT - 85,
-      180,
-      55,
-      "#315f9b",
-      () => this.onEndYear(),
-    );
+    this.endYearButton = this.addButton(
+    this.group,
+    "End Year",
+    STAGE_WIDTH - 210,
+    STAGE_HEIGHT - 85,
+    180,
+    55,
+    "#315f9b",
+    () => this.onEndYear(),
+  );
 
     // Four map regions meet at the city center.
     const map = new Konva.Group({
@@ -406,6 +411,24 @@ export class MainGameScreenView implements View {
     this.group.getLayer()?.batchDraw();
   }
 
+  updateEndYearButton(enabled: boolean): void {
+  this.endYearButton.opacity(enabled ? 1 : 0.4);
+  this.group.getLayer()?.batchDraw();
+}
+
+updatePopulationRequirement(
+  population: number,
+  required: number,
+): void {
+  if (population >= required) {
+    this.showMessage("Population requirement reached! You can advance the year.");
+  } else {
+    this.showMessage(
+      `You need ${(required - population).toLocaleString()} more people to advance the year.`,
+    );
+  }
+}
+
 
   private createMinigameModal(minigames: MiniGameChoice[]): void {
     this.minigameModal.add(new Konva.Rect({
@@ -512,52 +535,51 @@ export class MainGameScreenView implements View {
   }
 
   private addButton(
-    parent: Konva.Group,
-    label: string,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color: string,
-    onClick: () => void,
-  ): void {
-    const button = new Konva.Group({ x, y });
+  parent: Konva.Group,
+  label: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color: string,
+  onClick: () => void,
+): Konva.Group {
+  const button = new Konva.Group({ x, y });
 
-    button.add(new Konva.Rect({
-      width,
-      height,
-      fill: color,
-      cornerRadius: 10,
-    }));
+  button.add(new Konva.Rect({
+    width,
+    height,
+    fill: color,
+    cornerRadius: 10,
+  }));
 
-    button.add(new Konva.Text({
-      width,
-      height,
-      text: label,
-      fontSize: 19,
-      fontFamily: "Arial",
-      fontStyle: "bold",
-      fill: "white",
-      align: "center",
-      verticalAlign: "middle",
-    }));
+  button.add(new Konva.Text({
+    width,
+    height,
+    text: label,
+    fontSize: 19,
+    fontFamily: "Arial",
+    fontStyle: "bold",
+    fill: "white",
+    align: "center",
+    verticalAlign: "middle",
+  }));
 
-    button.on("click tap", onClick);
-    button.on("mouseenter", () => {
-      button.getStage()?.container().style.setProperty(
-        "cursor",
-        "pointer",
-      );
-    });
-    button.on("mouseleave", () => {
-      button.getStage()?.container().style.setProperty(
-        "cursor",
-        "default",
-      );
-    });
+  button.on("click tap", onClick);
 
-    parent.add(button);
-  }
+  button.on("mouseenter", () => {
+    if (button.listening()) {
+      button.getStage()?.container().style.setProperty("cursor", "pointer");
+    }
+  });
+
+  button.on("mouseleave", () => {
+    button.getStage()?.container().style.setProperty("cursor", "default");
+  });
+
+  parent.add(button);
+  return button;
+}
 
   show(): void {
     this.group.visible(true);

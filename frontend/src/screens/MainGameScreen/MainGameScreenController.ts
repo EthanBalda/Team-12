@@ -212,6 +212,17 @@ export class MainGameScreenController extends ScreenController {
       return;
     }
 
+    if (!this.model.canEndYear()) {
+    const required = this.model.getRequiredPopulation();
+    const current = this.model.getStats().population;
+
+    this.view.showMessage(
+      `You need ${required.toLocaleString()} population to end this year. ` +
+      `Current population: ${current.toLocaleString()}.`
+    );
+    return;
+  }
+
     this.endYearInProgress = true;
     try {
       // Save the city's stats before advancing the year.
@@ -353,6 +364,9 @@ export class MainGameScreenController extends ScreenController {
     this.view.updateStats(stats);
     this.view.updateYear(stats.year);
     this.view.updateBuildings(this.model.getBuildings());
+    this.view.updateEndYearButton(this.model.canEndYear());
+    
+
     void this.saveGame().catch(() => this.view.showMessage("Could not save your city. Please try again."));
   }
 }

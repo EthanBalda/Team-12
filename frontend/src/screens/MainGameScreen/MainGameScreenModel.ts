@@ -34,6 +34,32 @@ export class MainGameScreenModel {
 
   private buildings: CityBuilding[] = [];
   private nextBuildingId = 1;
+  private populationThresholds: Record<number, number> = {
+  1: 10000,
+  2: 11000,
+  3: 12000,
+  4: 13500,
+  5: 15000,
+  6: 17000,
+  7: 19000,
+  8: 21000,
+  9: 23500,
+  10: 26000,
+};
+
+  canEndYear(): boolean {
+    const requiredPopulation = this.getRequiredPopulation();
+
+    if (requiredPopulation === undefined) return false;
+    
+    return this.population >= requiredPopulation;
+  }
+
+  getRequiredPopulation(): number {
+   
+    return this.populationThresholds[this.year] ?? 0;
+    
+  }
 
   restoreState(state: CityState): void {
     this.population = state.stats.population;

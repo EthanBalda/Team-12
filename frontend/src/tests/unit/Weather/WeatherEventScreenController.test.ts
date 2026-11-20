@@ -41,6 +41,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
       updateStats: vi.fn(),
       updateYear: vi.fn(),
       updateBuildings: vi.fn(),
+      updateEndYearButton: vi.fn(),
       showMessage: vi.fn(),
       show: vi.fn(),
       hide: vi.fn(),

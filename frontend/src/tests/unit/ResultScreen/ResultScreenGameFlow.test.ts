@@ -78,6 +78,7 @@ const gameView = vi.hoisted(() => ({
     updateStats: vi.fn(),
     updateYear: vi.fn(),
     updateBuildings: vi.fn(),
+    updateEndYearButton: vi.fn(),
     showMessage: vi.fn(),
     show: vi.fn(),
     hide: vi.fn(),
@@ -100,6 +101,7 @@ vi.mock(
             updateStats = gameView.updateStats;
             updateYear = gameView.updateYear;
             updateBuildings = gameView.updateBuildings;
+            updateEndYearButton = gameView.updateEndYearButton;
             showMessage = gameView.showMessage;
             show = gameView.show;
             hide = gameView.hide;
