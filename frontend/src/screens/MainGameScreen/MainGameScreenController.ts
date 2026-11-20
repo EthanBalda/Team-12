@@ -115,7 +115,9 @@ export class MainGameScreenController extends ScreenController {
       this.compareController.setTier(1 + Math.floor((this.model.getStats().year - 1) / 2));
       this.refreshView();
       this.persistenceEnabled = true;
-      this.screenSwitcher.switchToScreen({ type: "resumeGame" });
+      if (!this.showPollutionLoss()) {
+        this.screenSwitcher.switchToScreen({ type: "resumeGame" });
+      }
     } catch (error) {
       console.error("Load failed:", error);
       this.screenSwitcher.switchToScreen({ type: "loginWorld" });
@@ -203,8 +205,23 @@ export class MainGameScreenController extends ScreenController {
       this.compareController.refreshChoices();
       this.closeCompare();
       this.refreshView();
-      this.view.showMessage(`Built ${build.name} in ${district.toUpperCase()}`);
+      if (!this.showPollutionLoss()) {
+          this.view.showMessage(`Built ${build.name} in ${district.toUpperCase()}`);
+      }
       return true;
+  }
+
+  private showPollutionLoss(): boolean {
+    const stats = this.model.getStats();
+    if (stats.pollution < 100) return false;
+
+    this.screenSwitcher.switchToScreen({
+      type: "result",
+      success: false,
+      reason: "pollution",
+      stats,
+    });
+    return true;
   }
 
   private async handleEndYear(): Promise<void> {
