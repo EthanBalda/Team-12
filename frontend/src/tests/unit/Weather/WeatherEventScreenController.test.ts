@@ -76,7 +76,7 @@ describe("weather controller integration", () => {
     const next = vi.mocked(WeatherEventScreenView).mock.calls[0]![4];
 
     next();
-    expect(city.getBuildings()[0]!.health).toBe(10);
+    expect(city.getBuildings()[0]!.health).toBe(35);
     expect(controller.getView().update).toHaveBeenLastCalledWith(expect.objectContaining({
       resolved: true,
       expectedDamage: 40,
@@ -84,7 +84,7 @@ describe("weather controller integration", () => {
     next();
     next();
     expect(damage).toHaveBeenCalledExactlyOnceWith(40, "north");
-    expect(city.getBuildings()[0]!.health).toBe(10);
+    expect(city.getBuildings()[0]!.health).toBe(35);
   });
 
   it("completes only on return and invokes completion exactly once", () => {

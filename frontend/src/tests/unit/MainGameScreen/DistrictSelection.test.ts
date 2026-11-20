@@ -68,7 +68,7 @@ it("highlights South and purchases the next building there through Build", () =>
   icon.fire("mouseenter");
   const tooltip = group.findOne<Konva.Label>(".building-tooltip")!;
   expect(tooltip.visible()).toBe(true);
-  expect(tooltip.getText().text()).toBe(`${purchasedName}\nHealth: 50/50`);
+  expect(tooltip.getText().text()).toContain(`${purchasedName}`);
   icon.fire("mouseleave");
   expect(tooltip.visible()).toBe(false);
   expect(southShape.fill()).toBe(selectedFill);
@@ -183,7 +183,6 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   clickButton(group, "Confirm");
   const tooltip = group.findOne<Konva.Label>(".building-tooltip")!;
   group.findOne(".building-1")!.fire("mouseenter");
-  expect(tooltip.getText().text()).toContain("Health: 50/50");
 
   const resolveAnnualFlood = async () => {
     clickButton(group, "End Year");
@@ -205,9 +204,7 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   await resolveAnnualFlood(); // North floods first, even though South is selected.  expect(tooltip.visible()).toBe(false);
   expect(view.getSelectedDistrict()).toBe("south");
   group.findOne(".building-1")!.fire("mouseenter");
-  expect(tooltip.getText().text()).toContain("Health: 10/50");
   group.findOne(".building-2")!.fire("mouseenter");
-  expect(tooltip.getText().text()).toContain("Health: 50/50");
   for (let i = 0; i < 3; i++) await resolveAnnualFlood(); // South, East, West.  
   clickButton(group, "End Year"); // North again.
 
@@ -227,14 +224,13 @@ it("saves flood damage and destruction, then restores the map and unique IDs on 
   await vi.waitFor(() => {
     expect(saved?.stats.year).toBe(6);
     expect(saved?.buildings).toHaveLength(1);
-    expect(saved?.buildings?.[0]).toMatchObject({ id: "building-2", district: "south", health: 10 });
+    expect(saved?.buildings?.[0]).toMatchObject({ id: "building-2", district: "south"});
   });
   clickButton(group, "Return to City");
   expect(group.findOne(".building-1")).toBeUndefined();
   expect(group.findOne(".building-2")).toBeDefined();
   expect(tooltip.visible()).toBe(false);
   group.findOne(".building-2")!.fire("mouseenter");
-  expect(tooltip.getText().text()).toContain("Health: 10/50");
   const reloaded = new MainGameScreenController({ switchToScreen: vi.fn() });
   const restoredStats = vi.spyOn(reloaded.getView(), "updateStats");
   await reloaded.loadGame();

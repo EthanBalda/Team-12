@@ -243,6 +243,7 @@ export class compareScreenView implements View {
 	panel.statsText.text(
 		`Cost: $${(build.money).toLocaleString()}\n` +
 		`Pollution: ${build.pollution}\n` +
+		`Add Population: ${build.populationLoss}\n` +
 		`Tier: ${build.tier}`,
 	);
 	}

@@ -29,6 +29,14 @@ export class compareScreenController extends ScreenController {
 
 	show(): void {
 		super.show();
+		// First open ever: nothing picked yet
+		if (this.model.getChoices().length === 0) {
+			this.refreshChoices();
+		}
+	}
+
+	// Only refresh after build or new year
+	refreshChoices(): void {
 		this.model.pickNewChoices();
 		this.view.updateBuilds(this.model.getChoices());
 	}
@@ -36,10 +44,7 @@ export class compareScreenController extends ScreenController {
 	updateMoney(money: number): void {
 		this.view.updateMoney(money);
 	}
-	/*
-	showMessage(message: string): void {
-  		this.view.showMessage(message);
-	}*/
+
 	private handleSelect(index: number): void {
 		const build = this.model.getChoices()[index];
 		if (!build) return;
