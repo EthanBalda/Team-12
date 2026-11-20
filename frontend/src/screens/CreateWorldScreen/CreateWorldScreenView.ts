@@ -5,16 +5,19 @@ export class CreateWorldScreenView implements ScreenView{
 	private root: HTMLDivElement;
     private onSubmit: (worldId: string, password: string) => void;
     private parent: HTMLElement;
+	private onGoBack: () => void;
 	private onLogin: () => void;
 
 
 	constructor(
 		onSubmit: (worldId: string, password: string) => void,
 		onLogin: () => void,
+		onGoBack: () => void,
 		parent: HTMLElement,
 	) {
         this.onSubmit = onSubmit;
 		this.onLogin = onLogin;
+		this.onGoBack = onGoBack;
         this.parent = parent;
 
 		this.root = document.createElement("div");
@@ -52,6 +55,8 @@ export class CreateWorldScreenView implements ScreenView{
 					Already have an account?
 					<a href="#" class="login-link">Login here.</a>
 				</p>
+
+				<button type="button" class="back-button">← Back</button>
 			</section>
 		`;
 
@@ -73,6 +78,12 @@ export class CreateWorldScreenView implements ScreenView{
 			event.preventDefault();
 			this.onLogin();
 		});
+
+		const backButton = this.root.querySelector(".back-button")!;
+        backButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            this.onGoBack();
+        });
 	}
 
 	show(): void {
