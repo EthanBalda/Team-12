@@ -11,7 +11,7 @@ export class StartScreenModel {
     ];
 
     readonly colors = {
-        background: "rgba(10, 48, 55, 0.65)",
+        background: "#849b8b",
         modal: "rgba(255, 255, 255, 0.95)",
         primary: "#00b9a5",
         primaryHover: "#009f90",

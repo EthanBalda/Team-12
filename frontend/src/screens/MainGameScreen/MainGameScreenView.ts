@@ -69,22 +69,8 @@ export class MainGameScreenView implements View {
       fill: "#849b8b",
     }));
 
-    //loads teh city background
-    const cityImage = new Image();
-    cityImage.onload = () => {
-      const background = new Konva.Image({
-        x: 0,
-        y: 0,
-        width: STAGE_WIDTH,
-        height: STAGE_HEIGHT,
-        image: cityImage,
-      });
+   
 
-      this.group.add(background);
-      background.zIndex(1);
-      this.group.getLayer()?.draw();
-    };
-    cityImage.src = "/bg.svg";
 
     //status cards
     this.group.add(new Konva.Rect({

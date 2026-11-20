@@ -36,7 +36,7 @@ export class StartScreenView {
             y: 0,
             width: STAGE_WIDTH,
             height: STAGE_HEIGHT,
-            fill: this.model.colors.white
+            fill: this.model.colors.background
         });
 
         this.group.add(background);
