@@ -146,6 +146,7 @@ export class MainGameScreenController extends ScreenController {
     this.weatherOverlay = null;
     this.model = new MainGameScreenModel();
     this.compareController.reset();
+    this.compareController.refreshChoices();
     this.closeCompare();
     this.refreshView();
     this.view.show();
@@ -199,6 +200,7 @@ export class MainGameScreenController extends ScreenController {
           return false;
       }
 
+      this.compareController.refreshChoices();
       this.closeCompare();
       this.refreshView();
       this.view.showMessage(`Built ${build.name} in ${district.toUpperCase()}`);
@@ -255,31 +257,35 @@ export class MainGameScreenController extends ScreenController {
         console.error("Game-over check failed:", error);
       }
 
-      // Calculate how much each stat changed.
-      const populationChange = stats.population - previousStats.population;
-      const moneyChange = stats.money - previousStats.money;
-      const pollutionChange = stats.pollution - previousStats.pollution;
+    
+    // Calculate how much each stat changed.
+    const populationChange = stats.population - previousStats.population;
+    const moneyChange = stats.money - previousStats.money;
+    const pollutionChange = stats.pollution - previousStats.pollution;
 
-      // Advance Building Tier
-      const YEARS_PER_TIER = 2; // Currently increments tier every two years
-      this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
-      this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
+    // Advance Building Tier
+    const YEARS_PER_TIER = 2; // Currently increments tier every two years
+    this.compareController.setTier(1 + Math.floor((stats.year - 1) / YEARS_PER_TIER));
+    this.view.showMessage("Congrats! You have unlocked a new tier of buildings with new and upgraded ones.");
 
-      // Update the displayed stats, year, and buildings.
-      this.refreshView();
+    // Refresh building after year
+    this.compareController.refreshChoices();
 
-      // Show the player a summary of the year's changes.
-      this.view.showMessage(
-        `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
-        `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
-        `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
-      );
+    // Update the displayed stats, year, and buildings.
+    this.refreshView();
 
-      // Annual floods rotate through districts, starting with north.
-      const districtIndex = (stats.year - 2) % DISTRICTS.length;
-      const district = DISTRICTS[districtIndex]!;
+    // Show the player a summary of the year's changes.
+    this.view.showMessage(
+      `Year ${stats.year} Summary: Population ${populationChange >= 0 ? "+" : ""}${populationChange}, ` +
+      `Money ${moneyChange >= 0 ? "+" : ""}${moneyChange}, ` +
+      `Pollution ${pollutionChange >= 0 ? "+" : ""}${pollutionChange}`
+    );
 
-      this.openWeather(district);
+    // Annual floods rotate through districts, starting with north.
+    const districtIndex = (stats.year - 2) % DISTRICTS.length;
+    const district = DISTRICTS[districtIndex]!;
+
+    this.openWeather(district);
     } finally {
       this.endYearInProgress = false;
     }
