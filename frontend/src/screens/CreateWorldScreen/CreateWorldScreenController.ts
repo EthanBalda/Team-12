@@ -16,23 +16,21 @@ export class CreateWorldScreenController extends ScreenController {
 
 		this.screenSwitcher = screenSwitcher;
 
-		this.view = new CreateWorldScreenView(
-			(worldId, password) => {
-				void this.handleCreateWorld(worldId, password);
-			}, () => 
-				{
-					this.screenSwitcher.switchToScreen({ type: "loginWorld" });
-				},
-			parent,
-		);
+		this.view = new CreateWorldScreenView(this.handleCreateWorld, this.handleLogin, this.handleBack, parent);
 	}
     getView(): ScreenView {
         return this.view;
     }
-	private async handleCreateWorld(
-		worldId: string,
-		password: string,
-	): Promise<void> {
+	
+	private handleLogin = () => {
+		this.screenSwitcher.switchToScreen({ type: "loginWorld" });
+	}
+
+	private handleBack = () => {
+		this.screenSwitcher.switchToScreen({ type: "start" });
+	}
+
+	private handleCreateWorld = async (worldId: string, password: string): Promise<void> => {
 		this.view.setError("");
 
 		if (!worldId || !password) {

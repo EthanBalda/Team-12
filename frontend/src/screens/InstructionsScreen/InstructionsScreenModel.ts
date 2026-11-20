@@ -46,7 +46,7 @@ export class InstructionsScreenModel {
 
     "Good luck, and build a sustainable future in Re:Planet!";
 
-    readonly backButtonText = "Go Back";
+    readonly backButtonText = "←  Back";
 
     readonly colors = {
         background: "rgba(10, 48, 55, 0.65)",
