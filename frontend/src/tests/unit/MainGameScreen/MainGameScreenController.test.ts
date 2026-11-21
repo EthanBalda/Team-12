@@ -176,4 +176,123 @@ describe("MainGameScreenController - End Year", () => {
     expect(findButtons("Face the Flood")).toHaveLength(1);
     group.destroy();
   });
+
+  function setupVictoryTest() {
+    vi.spyOn(MainGameScreenModel.prototype, "canEndYear").mockReturnValue(true);
+
+    let forceLoss = false;
+
+    vi.mocked(fetch).mockImplementation(async (_url, options) => {
+      const { year } = JSON.parse(String(options?.body));
+
+      if (forceLoss) {
+        return Response.json({
+          gameOver: true,
+          success: false,
+          reason: "money",
+        });
+      }
+
+      return Response.json(
+        year >= 10
+          ? { gameOver: true, success: true }
+          : { gameOver: false },
+      );
+    });
+
+    const screenSwitcher = {
+      switchToScreen: vi.fn((screen: { type: string }) => {
+        if (screen.type === "resumeGame") {
+          controller.show();
+        }
+        if (screen.type === "mainGame") {
+          controller.startGame();
+        }
+      }),
+    };
+
+    const controller = new MainGameScreenController(screenSwitcher);
+    vi.spyOn(
+      controller as unknown as { openWeather: () => void },
+      "openWeather",
+    ).mockImplementation(() => {});
+
+    const view = controller.getView() as MainGameScreenView & {
+      clickEndYear: () => Promise<void>;
+    };
+
+    async function advanceToYear10() {
+      // A fresh game starts at year 1.
+      for (let year = 1; year < 10; year++) {
+        await view.clickEndYear();
+      }
+    }
+
+    return {
+      view,
+      screenSwitcher,
+      advanceToYear10,
+      setForceLoss: (value: boolean) => {
+        forceLoss = value;
+      },
+    };
+  }
+
+  it("shows victory once and keeps advancing after Continue", async () => {
+    const { view, screenSwitcher, advanceToYear10 } = setupVictoryTest();
+
+    await advanceToYear10();
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        type: "result",
+        success: true,
+        stats: expect.objectContaining({ year: 10 }),
+      }),
+    );
+
+    screenSwitcher.switchToScreen({ type: "resumeGame" });
+    screenSwitcher.switchToScreen.mockClear();
+
+    await view.clickEndYear();
+    await view.clickEndYear();
+
+    expect(view.updateYear).toHaveBeenLastCalledWith(12);
+    expect(view.showMessage).toHaveBeenCalledWith(
+      expect.stringContaining("Year 12 Summary:"),
+    );
+    expect(screenSwitcher.switchToScreen).not.toHaveBeenCalled();
+  });
+
+  it("shows a loss after Continue and allows victory again after Try Again", async () => {
+    const { screenSwitcher, view, advanceToYear10, setForceLoss } =
+      setupVictoryTest();
+
+    await advanceToYear10();
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith(
+      expect.objectContaining({ type: "result", success: true }),
+    );
+
+    screenSwitcher.switchToScreen({ type: "resumeGame" });
+    setForceLoss(true);
+    await view.clickEndYear();
+
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith(
+      expect.objectContaining({ type: "result", success: false }),
+    );
+
+    setForceLoss(false);
+    screenSwitcher.switchToScreen({ type: "mainGame" });
+    expect(view.updateYear).toHaveBeenLastCalledWith(1);
+
+    screenSwitcher.switchToScreen.mockClear();
+    await advanceToYear10();
+
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        type: "result",
+        success: true,
+        stats: expect.objectContaining({ year: 10 }),
+      }),
+    );
+  });
 });
