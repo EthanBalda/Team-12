@@ -10,6 +10,7 @@ afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 beforeEach(() => {
@@ -162,6 +163,9 @@ it("keeps decoration passive and hover details inside the map clear of every dis
 });
 
 it("saves flood damage and destruction, then restores the map and unique IDs on login", async () => {
+  vi.spyOn(MainGameScreenModel.prototype, "canEndYear")
+  .mockReturnValue(true);
+
   let saved: CityState | null = null;
   const fetchMock = vi.fn(async (_url: string, options?: RequestInit) => {
     if (options?.method === "PUT") saved = JSON.parse(options.body as string);

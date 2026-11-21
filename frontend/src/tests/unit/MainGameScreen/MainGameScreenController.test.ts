@@ -1,8 +1,13 @@
 
-import { beforeEach, describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi, afterEach } from "vitest";
 import Konva from "konva";
 import { MainGameScreenController } from "../../../screens/MainGameScreen/MainGameScreenController";
 import type { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScreenView";
+import { MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 // Mock the view so we can test the controller without rendering the game.
 vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
@@ -16,6 +21,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
     updateStats = vi.fn();
     updateYear = vi.fn();
     updateBuildings = vi.fn();
+    updateEndYearButton = vi.fn();
     showMessage = vi.fn();
     show = vi.fn();
 
@@ -128,6 +134,9 @@ describe("MainGameScreenController - End Year", () => {
   });
 
   it("advances once while the game-over check is pending and again after the flood", async () => {
+    vi.spyOn(MainGameScreenModel.prototype, "canEndYear")
+    .mockReturnValue(true);
+
     let resolveRequest!: (response: Response) => void;
     const request = new Promise<Response>((resolve) => { resolveRequest = resolve; });
     const fetchMock = vi.mocked(fetch).mockReturnValueOnce(request);
