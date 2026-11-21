@@ -237,6 +237,11 @@ export class MainGameScreenController extends ScreenController {
       // Advance the year and apply the yearly changes.
       this.model.endYear();
 
+      if (this.showPollutionLoss()) {
+        this.refreshView();
+        return;
+      }
+
       // Get the updated stats after advancing the year.
       const stats = this.model.getStats();
 

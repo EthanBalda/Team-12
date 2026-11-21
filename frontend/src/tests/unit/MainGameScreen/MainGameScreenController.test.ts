@@ -17,6 +17,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
     updateYear = vi.fn();
     updateBuildings = vi.fn();
     showMessage = vi.fn();
+    show = vi.fn();
 
     constructor(
       _onBuild: unknown,
@@ -84,6 +85,48 @@ describe("MainGameScreenController - End Year", () => {
       expect.stringContaining("Pollution +")
     );
   });
+
+  it("saves and shows a pollution loss when End Year raises pollution from 98 to 100", async () => {
+    const fetchMock = vi.mocked(fetch).mockResolvedValueOnce(
+      Response.json({
+        cityState: {
+          stats: { population: 10000, money: 500000, pollution: 98, year: 1 },
+        },
+      }),
+    );
+    const screenSwitcher = { switchToScreen: vi.fn() };
+    const controller = new MainGameScreenController(screenSwitcher);
+    const view = controller.getView() as MainGameScreenView & {
+      clickEndYear: () => Promise<void>;
+    };
+
+    await controller.loadGame();
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith({ type: "resumeGame" });
+
+    await view.clickEndYear();
+
+    const finalStats = { population: 10200, money: 520400, pollution: 100, year: 2 };
+    expect(screenSwitcher.switchToScreen).toHaveBeenLastCalledWith({
+      type: "result",
+      success: false,
+      reason: "pollution",
+      stats: finalStats,
+    });
+    expect(view.getGroup().getChildren()).toHaveLength(0);
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      expect.stringMatching(/\/worlds\/game-over$/),
+      expect.anything(),
+    );
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringMatching(/\/worlds\/state$/),
+        expect.objectContaining({ method: "PUT" }),
+      );
+    });
+    const save = fetchMock.mock.calls.find(([, options]) => options?.method === "PUT");
+    expect(JSON.parse(String(save?.[1]?.body))).toMatchObject({ stats: finalStats });
+  });
+
   it("advances once while the game-over check is pending and again after the flood", async () => {
     let resolveRequest!: (response: Response) => void;
     const request = new Promise<Response>((resolve) => { resolveRequest = resolve; });
