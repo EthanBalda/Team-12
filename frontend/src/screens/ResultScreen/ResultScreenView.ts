@@ -9,6 +9,8 @@ export class ResultScreenView implements View {
   private loss_group: Konva.Group;
   private lossReasonText: Konva.Text;
   private finalStatsText: Konva.Text;
+  
+
 
   constructor(
     onContinue: () => void,
@@ -81,38 +83,6 @@ export class ResultScreenView implements View {
       align: "center",
     }));
 
-    this.success_group.add(new Konva.Text({
-      x: 0,
-      y: 365,
-      width: STAGE_WIDTH,
-      text: "10 years survived",
-      fontSize: 20,
-      fontFamily: "Arial",
-      fill: "#14245E",
-      align: "center",
-    }));
-
-    this.success_group.add(new Konva.Text({
-      x: 0,
-      y: 405,
-      width: STAGE_WIDTH,
-      text: "Peak population  1,240",
-      fontSize: 20,
-      fontFamily: "Arial",
-      fill: "#14245E",
-      align: "center",
-    }));
-
-    this.success_group.add(new Konva.Text({
-      x: 0,
-      y: 445,
-      width: STAGE_WIDTH,
-      text: "Avg pollution  21%",
-      fontSize: 20,
-      fontFamily: "Arial",
-      fill: "#14245E",
-      align: "center",
-    }));
 
     this.addButton(
       this.success_group,
@@ -156,7 +126,7 @@ export class ResultScreenView implements View {
       fontSize: 50,
       fontFamily: "Arial",
       fontStyle: "bold",
-      fill: "#00B5A5",
+      fill: "#B91C1C",
       align: "center",
     }));
 
@@ -316,6 +286,10 @@ export class ResultScreenView implements View {
   }
 
   show_result(is_success: boolean): void {
+    this.finalStatsText.moveTo(
+      is_success ? this.success_group : this.loss_group,
+    );
+    this.finalStatsText.y(is_success ? 365 : 405);
     this.success_group.visible(is_success);
     this.loss_group.visible(!is_success);
     this.group.show();

@@ -26,6 +26,7 @@ export class MainGameScreenController extends ScreenController {
   private endYearInProgress = false;
   private persistenceEnabled = false;
   private saveQueue: Promise<void> = Promise.resolve();
+  private hasShownVictoryScreen = false;
 
   private readonly screenSwitcher: ScreenSwitcher;
 
@@ -143,6 +144,7 @@ export class MainGameScreenController extends ScreenController {
   }
 
   startGame(persist = false): void {
+    this.hasShownVictoryScreen = false;
     this.persistenceEnabled = persist;
     this.weatherOverlay?.destroy();
     this.weatherOverlay = null;
@@ -230,15 +232,15 @@ export class MainGameScreenController extends ScreenController {
     }
 
     if (!this.model.canEndYear()) {
-    const required = this.model.getRequiredPopulation();
-    const current = this.model.getStats().population;
+      const required = this.model.getRequiredPopulation();
+      const current = this.model.getStats().population;
 
-    this.view.showMessage(
-      `You need ${required.toLocaleString()} population to end this year. ` +
-      `Current population: ${current.toLocaleString()}.`
-    );
-    return;
-  }
+      this.view.showMessage(
+        `You need ${required.toLocaleString()} population to end this year. ` +
+        `Current population: ${current.toLocaleString()}.`
+      );
+      return;
+    }
 
     this.endYearInProgress = true;
     try {
@@ -276,7 +278,10 @@ export class MainGameScreenController extends ScreenController {
 
         const result = await response.json();
 
-        if (result.gameOver) {
+        if (result.gameOver && (!result.success || !this.hasShownVictoryScreen)) {
+          if(result.success){
+            this.hasShownVictoryScreen = true;
+          }
           this.refreshView();
           this.screenSwitcher.switchToScreen({
               type: "result",
