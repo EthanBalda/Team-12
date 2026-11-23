@@ -116,8 +116,16 @@ export class MainGameScreenController extends ScreenController {
       this.compareController.setTier(1 + Math.floor((this.model.getStats().year - 1) / 2));
       this.refreshView();
       this.persistenceEnabled = true;
+
       if (!this.showPollutionLoss()) {
         this.screenSwitcher.switchToScreen({ type: "resumeGame" });
+
+        // Reopen an unfinished weather event after refreshing.
+        const pendingEvent = this.model.getState().pendingWeatherEvent;
+
+        if (pendingEvent) {
+          this.openWeather(pendingEvent.district);
+        }
       }
     } catch (error) {
       console.error("Load failed:", error);
@@ -310,7 +318,7 @@ export class MainGameScreenController extends ScreenController {
     this.compareController.refreshChoices();
 
     // Update the displayed stats, year, and buildings.
-    this.refreshView();
+    
 
     // Show the player a summary of the year's changes.
     this.view.showMessage(
@@ -322,6 +330,12 @@ export class MainGameScreenController extends ScreenController {
     // Annual floods rotate through districts, starting with north.
     const districtIndex = (stats.year - 2) % DISTRICTS.length;
     const district = DISTRICTS[districtIndex]!;
+
+    // record and save the unfinished weather event
+    this.model.setPendingWeatherEvent(district);
+    await this.saveGame();
+
+    this.refreshView();
 
     this.openWeather(district);
     } finally {
@@ -343,6 +357,7 @@ export class MainGameScreenController extends ScreenController {
       }),
     );
 
+    
     const controller = new WeatherEventScreenController(
       floodEvent,
       this.model,
@@ -350,6 +365,7 @@ export class MainGameScreenController extends ScreenController {
       (result) => {
         overlay.destroy();
         this.weatherOverlay = null;
+        this.model.clearPendingWeatherEvent();
 
         const stage = this.view.getGroup().getStage();
         if (stage) {
@@ -364,9 +380,31 @@ export class MainGameScreenController extends ScreenController {
         );
       },
       () => {
-        void this.saveGame().catch(() => this.view.showMessage("Could not save your city. Please try again."));
+        // The flood has been resolved, so it is no longer pending.
+        this.model.clearPendingWeatherEvent();
+
+        void this.saveGame().catch(() =>
+          this.view.showMessage("Could not save your city. Please try again.")
+        );
+      },
+      // NEW: Save purchased weather preparations.
+      (preparationIds) => {
+        this.model.setPendingWeatherPreparations(preparationIds);
+        void this.saveGame().catch(() =>
+          this.view.showMessage("Could not save your city. Please try again.")
+        );
       },
     );
+
+    // Restore previously purchased weather preparations.
+    const pendingEvent = this.model.getState().pendingWeatherEvent;
+
+    if (pendingEvent && pendingEvent.district === district) {
+      controller.restorePurchasedPreparations(
+        pendingEvent.purchasedPreparationIds ?? [],
+      );
+    }
+
 
     const weatherGroup = controller.getView().getGroup();
     const scale = Math.min(

@@ -24,6 +24,11 @@ export interface CityState {
   stats: { population: number; money: number; pollution: number; year: number };
   buildings?: CityBuilding[];
   nextBuildingId?: number;
+
+  pendingWeatherEvent?: {
+    district: District;
+    purchasedPreparationIds: string[];
+  } | null;
 }
 
 export class MainGameScreenModel {
@@ -31,6 +36,10 @@ export class MainGameScreenModel {
   private money = 500000;
   private pollution = 25;
   private year = 1;
+  private pendingWeatherEvent: {
+    district: District;
+    purchasedPreparationIds: string[];
+  } | null = null;
 
   private buildings: CityBuilding[] = [];
   private nextBuildingId = 1;
@@ -73,6 +82,7 @@ export class MainGameScreenModel {
       state.nextBuildingId ?? 1,
       ...this.buildings.map((building) => Number(building.id.slice("building-".length)) + 1),
     );
+    this.pendingWeatherEvent = state.pendingWeatherEvent ?? null;
   }
 
   getState(): CityState {
@@ -80,7 +90,25 @@ export class MainGameScreenModel {
       stats: this.getStats(),
       buildings: this.getBuildings(),
       nextBuildingId: this.nextBuildingId,
+      pendingWeatherEvent: this.pendingWeatherEvent,
     };
+  }
+
+  setPendingWeatherEvent(district: District): void {
+    this.pendingWeatherEvent = {
+      district,
+      purchasedPreparationIds: [],
+    };
+  }
+
+  setPendingWeatherPreparations(preparationIds: string[]): void {
+    if (this.pendingWeatherEvent) {
+      this.pendingWeatherEvent.purchasedPreparationIds = [...preparationIds];
+    }
+  }
+
+  clearPendingWeatherEvent(): void {
+    this.pendingWeatherEvent = null;
   }
 
   getStats() {

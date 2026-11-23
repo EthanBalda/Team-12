@@ -15,6 +15,7 @@ export class WeatherEventScreenController {
   private readonly onComplete: (result: WeatherResolution) => void;
   private completed = false;
   private readonly onResolved: () => void;
+  private readonly onPurchase: (preparationIds: string[]) => void;
 
   constructor(
     definition: WeatherEvent,
@@ -22,10 +23,12 @@ export class WeatherEventScreenController {
     district: District,
     onComplete: (result: WeatherResolution) => void,
     onResolved: () => void = () => {},
+    onPurchase: (preparationIds: string[]) => void = () => {},
   ) {
     this.event = new CityWeatherEvent(definition, city, district);
     this.onComplete = onComplete;
     this.onResolved = onResolved;
+    this.onPurchase = onPurchase;
 
     this.view = new WeatherEventScreenView(
       definition.name,
@@ -42,6 +45,11 @@ export class WeatherEventScreenController {
     return this.view;
   }
 
+  restorePurchasedPreparations(preparationIds: string[]): void {
+    this.event.restorePurchasedPreparations(preparationIds);
+    this.refreshView();
+  }
+
   show(): void {
     this.refreshView();
     this.view.show();
@@ -56,6 +64,8 @@ export class WeatherEventScreenController {
     this.refreshView();
 
     if (result.success) {
+      this.onPurchase(this.event.getState().purchasedPreparationIds);
+
       this.view.showMessage(
         "Preparation purchased. Buildings will take less damage.",
       );
