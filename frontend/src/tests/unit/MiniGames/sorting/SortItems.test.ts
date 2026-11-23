@@ -16,6 +16,12 @@ describe("SORT_ITEMS", () => {
         }
     });
 
+    it("gives every item a different name", () => {
+        const names = SORT_ITEMS.map((item) => item.name);
+
+        expect(new Set(names).size).toBe(names.length);
+    });
+
     it("uses every bin", () => {
         expect(new Set(SORT_ITEMS.map((item) => item.bin))).toEqual(new Set(BINS));
     });

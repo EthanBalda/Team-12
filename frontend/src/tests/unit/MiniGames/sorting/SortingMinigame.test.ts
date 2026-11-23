@@ -58,13 +58,18 @@ function click(group: Konva.Group, label: string): void {
     text.getParent()!.fire("click");
 }
 
+function items(group: Konva.Group): Konva.Node[] {
+    return group.find((node: Konva.Node) => node.draggable());
+}
+
 function currentItem(group: Konva.Group): SortItem {
-    const name = texts(group).find((text) => text.startsWith("Item ") && !text.includes(" of "));
+    if (items(group).length === 0) passTime(1);
+    const name = (items(group)[0] as Konva.Group).findOne<Konva.Text>("Text")!.text();
     return ITEMS.find((item) => item.name === name)!;
 }
 
 function drag(group: Konva.Group, bin: Bin): void {
-    const item = group.find((node: Konva.Node) => node.draggable())[0]!;
+    const item = items(group)[0]!;
     const label = group.find<Konva.Text>("Text").find((node) => node.text() === BIN_LABELS[bin])!;
     item.fire("dragstart");
     item.position({ x: label.x() + 40, y: label.y() + 40 });
@@ -83,7 +88,7 @@ describe("SortingMinigame", () => {
 
         click(group, "Easy");
 
-        expect(hasText(group, "Item 1 of 8 | Score 0 | Streak 0")).toBe(true);
+        expect(hasText(group, "Sorted 0 of 8 | Score 0 | Streak 0")).toBe(true);
     });
 
     it("gives points when an item is dragged to the right bin", () => {
@@ -94,7 +99,7 @@ describe("SortingMinigame", () => {
         sortCurrent(group, true);
 
         expect(hasText(group, `Correct! +100. ${tip}`)).toBe(true);
-        expect(hasText(group, "Item 2 of 8 | Score 100 | Streak 1")).toBe(true);
+        expect(hasText(group, "Sorted 1 of 8 | Score 100 | Streak 1")).toBe(true);
     });
 
     it("shows the tip when an item is dragged to the wrong bin", () => {
@@ -105,18 +110,37 @@ describe("SortingMinigame", () => {
         sortCurrent(group, false);
 
         expect(hasText(group, `Wrong bin. ${tip}`)).toBe(true);
-        expect(hasText(group, "Item 2 of 8 | Score 0 | Streak 0")).toBe(true);
+        expect(hasText(group, "Sorted 1 of 8 | Score 0 | Streak 0")).toBe(true);
     });
 
     it("stops the falling item while the player holds it", () => {
-        const { group } = startGame();
+        const { group } = startGame(ITEMS.slice(0, 1));
         click(group, "Easy");
-        group.find((node: Konva.Node) => node.draggable())[0]!.fire("dragstart");
+        items(group)[0]!.fire("dragstart");
 
         passTime(DIFFICULTY.easy.fallMs * 2);
 
         expect(hasText(group, "Missed!")).toBe(false);
-        expect(hasText(group, "Item 1 of 8")).toBe(true);
+        expect(hasText(group, "Sorted 0 of 1")).toBe(true);
+    });
+
+    it("never lets the player drag an item upward", () => {
+        const { group } = startGame();
+        click(group, "Easy");
+        passTime(DIFFICULTY.easy.fallMs / 2);
+        const item = items(group)[0]!;
+        const startY = item.y();
+
+        item.fire("dragstart");
+        item.y(0);
+        item.fire("dragmove");
+        expect(item.y()).toBe(startY);
+
+        item.y(startY + 50);
+        item.fire("dragmove");
+        item.y(startY);
+        item.fire("dragmove");
+        expect(item.y()).toBe(startY + 50);
     });
 
     it("counts an item as missed when it falls to the bins", () => {
@@ -126,7 +150,17 @@ describe("SortingMinigame", () => {
         passTime(DIFFICULTY.easy.fallMs);
 
         expect(hasText(group, "Missed!")).toBe(true);
-        expect(hasText(group, "Item 1 of 8")).toBe(false);
+        expect(hasText(group, "Sorted 1 of 8")).toBe(true);
+    });
+
+    it("drops more items while the first one is still falling", () => {
+        const { group } = startGame();
+        click(group, "Easy");
+        expect(items(group)).toHaveLength(1);
+
+        passTime(DIFFICULTY.easy.spawnMs);
+
+        expect(items(group)).toHaveLength(2);
     });
 
     it("shows the results and saves a new high score at the end of the round", () => {

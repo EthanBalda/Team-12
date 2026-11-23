@@ -3,21 +3,26 @@ import type { Bin, SortItem } from "./items";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
-export const DIFFICULTY: Record<Difficulty, { items: number; fallMs: number }> = {
-    easy: { items: 8, fallMs: 6000 },
-    medium: { items: 10, fallMs: 4000 },
-    hard: { items: 12, fallMs: 2500 },
+export const DIFFICULTY: Record<Difficulty, { items: number; fallMs: number; spawnMs: number; maxActive: number }> = {
+    easy:   { items: 8,  fallMs: 6000, spawnMs: 3000, maxActive: 2 },
+    medium: { items: 10, fallMs: 4000, spawnMs: 2000, maxActive: 4 },
+    hard:   { items: 12, fallMs: 2500, spawnMs: 1200, maxActive: 5 },
 };
 
 export const POINTS = 100;
 export const STREAK_BONUS = 20;      
 export const MAX_STREAK_BONUS = 100;
 export const MONEY_PER_POINT = 5;
+export const MIN_SPEED = 1;
+export const MAX_SPEED = 1.5;
 
 export interface FallingItem {
+    id: number;
     item: SortItem;
-    x: number;          
-    progress: number;   
+    x: number;
+    progress: number;
+    held: boolean;
+    speed: number;
 }
 
 export interface SortFeedback {
@@ -28,14 +33,17 @@ export interface SortFeedback {
 }
 
 export class SortingModel {
-    private items: SortItem[];
+    private queue: SortItem[];
+    private active: FallingItem[] = [];
+    private total: number;
     private fallMs: number;
+    private spawnMs: number;
+    private maxActive: number;
     private random: () => number;
 
-    private index = 0;
-    private x = 0.5;
-    private progress = 0;
-    private held = false;
+    private sinceSpawn = 0;
+    private nextId = 0;
+    private doneCount = 0;
 
     private score = 0;
     private streak = 0;
@@ -47,17 +55,19 @@ export class SortingModel {
         const settings = DIFFICULTY[difficulty];
         this.random = random;
         this.fallMs = settings.fallMs;
-        this.items = shuffle(pool, random).slice(0, settings.items);
-        this.x = this.random();
+        this.spawnMs = settings.spawnMs;
+        this.maxActive = settings.maxActive;
+        this.queue = shuffle(pool, random).slice(0, settings.items);
+        this.total = this.queue.length;
+        if (this.queue.length > 0) this.spawn();
     }
 
-    getCurrent(): FallingItem | null {
-        const item = this.items[this.index];
-        return item ? { item, x: this.x, progress: this.progress } : null;
+    getActive(): FallingItem[] {
+        return this.active;
     }
 
-    getProgress(): { current: number; total: number } {
-        return { current: this.index + 1, total: this.items.length };
+    getProgress(): { done: number; total: number } {
+        return { done: this.doneCount, total: this.total };
     }
 
     getStats() {
@@ -70,35 +80,49 @@ export class SortingModel {
         };
     }
 
-    update(ms: number): SortItem | null {
-        const current = this.getCurrent();
-        if (!current || this.held) return null;
+    update(ms: number): { spawned: FallingItem[]; missed: FallingItem[] } {
+        const spawned: FallingItem[] = [];
+        const missed: FallingItem[] = [];
+        if (this.isDone()) return { spawned, missed };
 
-        this.progress += ms / this.fallMs;
-        if (this.progress < 1) return null;
+        for (const falling of this.active) {
+            if (!falling.held) falling.progress += (ms / this.fallMs) * falling.speed;
+        }
 
-        this.missedCount++;
-        this.streak = 0;
-        this.nextItem();
-        return current.item;
+        for (const falling of this.active.filter((f) => f.progress >= 1)) {
+            this.remove(falling.id);
+            this.missedCount++;
+            this.streak = 0;
+            missed.push(falling);
+        }
+
+        this.sinceSpawn += ms;
+        const canSpawn = this.queue.length > 0 && this.active.length < this.maxActive;
+        if (canSpawn && (this.active.length === 0 || this.sinceSpawn >= this.spawnMs)) {
+            spawned.push(this.spawn());
+        }
+
+        return { spawned, missed };
     }
 
-    grab(): void {
-        if (this.getCurrent()) this.held = true;
+    grab(id: number): void {
+        const falling = this.find(id);
+        if (falling) falling.held = true;
     }
 
-    release(x: number, progress: number): void {
-        if (!this.held) return;
-        this.held = false;
-        this.x = clamp(x);
-        this.progress = clamp(progress);
+    release(id: number, x: number, progress: number): void {
+        const falling = this.find(id);
+        if (!falling || !falling.held) return;
+        falling.held = false;
+        falling.x = clamp(x);
+        falling.progress = Math.max(falling.progress, clamp(progress));
     }
 
-    sort(bin: Bin): SortFeedback | null {
-        const current = this.getCurrent();
-        if (!current) return null;
+    sort(id: number, bin: Bin): SortFeedback | null {
+        const falling = this.find(id);
+        if (!falling) return null;
 
-        const correct = bin === current.item.bin;
+        const correct = bin === falling.item.bin;
         let points = 0;
         if (correct) {
             points = POINTS + Math.min(this.streak * STREAK_BONUS, MAX_STREAK_BONUS);
@@ -110,31 +134,47 @@ export class SortingModel {
             this.streak = 0;
         }
 
-        this.nextItem();
-        return { correct, item: current.item, points, streak: this.streak };
+        this.remove(id);
+        return { correct, item: falling.item, points, streak: this.streak };
     }
 
     isDone(): boolean {
-        return this.index >= this.items.length;
+        return this.queue.length === 0 && this.active.length === 0;
     }
 
     getResult(): MiniGameResult {
-        if (this.items.length === 0) {
+        if (this.total === 0) {
             return { delta: {}, summary: "No items to sort" };
         }
 
         const money = this.score * MONEY_PER_POINT;
         return {
             delta: { money },
-            summary: `${this.correctCount}/${this.items.length} sorted, +$${money.toLocaleString("en-US")}`,
+            summary: `${this.correctCount}/${this.total} sorted, +$${money.toLocaleString("en-US")}`,
         };
     }
 
-    private nextItem(): void {
-        this.index++;
-        this.progress = 0;
-        this.held = false;
-        this.x = this.random();
+    private spawn(): FallingItem {
+        const falling: FallingItem = {
+            id: this.nextId++,
+            item: this.queue.shift()!,
+            x: this.random(),
+            progress: 0,
+            held: false,
+            speed: MIN_SPEED + this.random() * (MAX_SPEED - MIN_SPEED),
+        };
+        this.active.push(falling);
+        this.sinceSpawn = 0;
+        return falling;
+    }
+
+    private find(id: number): FallingItem | undefined {
+        return this.active.find((f) => f.id === id);
+    }
+
+    private remove(id: number): void {
+        this.active = this.active.filter((f) => f.id !== id);
+        this.doneCount++;
     }
 }
 
