@@ -375,6 +375,9 @@ export class MainGameScreenController extends ScreenController {
         );
       },
       () => {
+        // The flood has been resolved, so it is no longer pending.
+        this.model.clearPendingWeatherEvent();
+
         void this.saveGame().catch(() =>
           this.view.showMessage("Could not save your city. Please try again.")
         );
