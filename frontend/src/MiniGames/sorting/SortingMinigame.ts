@@ -2,7 +2,7 @@
 import Konva from "konva";
 import { MiniGame } from "../MiniGames";
 import { BINS, SORT_ITEMS, type Bin, type SortItem } from "./items";
-import { SortingModel, type Difficulty } from "./SortingModel";
+import { SortingModel, type Difficulty, type FallingItem } from "./SortingModel";
 import { LocalHighScoreStore, recordHighScore, type HighScoreStore } from "./highScore";
 
 const COLORS = {
@@ -50,8 +50,7 @@ export class SortingMinigame extends MiniGame {
     private model: SortingModel | null = null;
     private animation: Konva.Animation | null = null;
     private binAreas: BinArea[] = [];
-    private itemNode: Konva.Group | null = null;
-    private itemLabel: Konva.Text | null = null;
+    private itemNodes = new Map<number, Konva.Group>();
     private statusText: Konva.Text | null = null;
     private feedbackText: Konva.Text | null = null;
 
@@ -69,7 +68,7 @@ export class SortingMinigame extends MiniGame {
     private renderDifficultyPicker(): void {
         this.clear();
         this.addText("Pick a difficulty", 150, 34, COLORS.text, "bold");
-        this.addText("Drag each item into the right bin before it reaches the bottom.", 205, 22, COLORS.subtle);
+        this.addText("Sort each item before it reaches the bins. More will keep falling!", 205, 22, COLORS.subtle);
 
         const levels: Difficulty[] = ["easy", "medium", "hard"];
         const startX = (this.ctx.width - (levels.length * 220 + (levels.length - 1) * 30)) / 2;
@@ -92,8 +91,8 @@ export class SortingMinigame extends MiniGame {
         this.drawBins();
         this.statusText = this.addText("", 20, 20, COLORS.subtle);
         this.feedbackText = this.addText("", 55, 22, COLORS.text, "bold");
-        this.drawItem();
-        this.showCurrentItem();
+        this.syncItems();
+        this.updateStatus();
 
         this.animation = this.addAnimation((frame) => {
             this.onFrame(Math.min(frame.timeDiff, MAX_FRAME_MS));
@@ -101,15 +100,41 @@ export class SortingMinigame extends MiniGame {
     }
 
     private onFrame(ms: number): void {
-        if (!this.model || !this.itemNode) return;
+        if (!this.model) return;
 
-        const missed = this.model.update(ms);
-        if (missed) {
-            this.showFeedback(`Missed! ${missed.tip}`, COLORS.wrong);
-            this.afterItem();
-        } else if (!this.itemNode.isDragging()) {
-            this.placeItem();
+        const { missed } = this.model.update(ms);
+        for (const falling of missed) this.showFeedback(`Missed! ${falling.item.tip}`, COLORS.wrong);
+        if (missed.length > 0) this.updateStatus();
+
+        if (this.model.isDone()) {
+            this.renderEnd();
+            return;
         }
+        this.syncItems();
+    }
+
+    private syncItems(): void {
+        if (!this.model) return;
+
+        const active = this.model.getActive();
+        const ids = new Set(active.map((falling) => falling.id));
+        for (const [id, node] of this.itemNodes) {
+            if (!ids.has(id)) {
+                node.destroy();
+                this.itemNodes.delete(id);
+            }
+        }
+
+        for (const falling of active) {
+            const node = this.itemNodes.get(falling.id) ?? this.drawItem(falling);
+            if (!node.isDragging()) {
+                node.position({
+                    x: falling.x * this.maxX(),
+                    y: FALL_TOP + falling.progress * this.fallDistance(),
+                });
+            }
+        }
+        this.redraw();
     }
 
     private drawBins(): void {
@@ -139,7 +164,7 @@ export class SortingMinigame extends MiniGame {
         });
     }
 
-    private drawItem(): void {
+    private drawItem(falling: FallingItem): Konva.Group {
         const node = new Konva.Group({ draggable: true });
         node.add(new Konva.Rect({
             width: ITEM_WIDTH,
@@ -149,36 +174,37 @@ export class SortingMinigame extends MiniGame {
             strokeWidth: 2,
             cornerRadius: 10,
         }));
-        this.itemLabel = new Konva.Text({
+        node.add(new Konva.Text({
             width: ITEM_WIDTH,
             height: ITEM_HEIGHT,
-            text: "",
+            text: falling.item.name,
             fontSize: 20,
             fontFamily: "Arial",
             fontStyle: "bold",
             fill: COLORS.text,
             align: "center",
             verticalAlign: "middle",
-        });
-        node.add(this.itemLabel);
+        }));
 
         node.on("mouseenter", () => this.setCursor("grab"));
         node.on("mouseleave", () => this.setCursor("default"));
         node.on("dragstart", () => {
             this.setCursor("grabbing");
-            this.model?.grab();
+            node.moveToTop();
+            this.model?.grab(falling.id);
         });
         node.on("dragmove", () => this.keepInside(node));
         node.on("dragend", () => {
             this.setCursor("grab");
-            this.drop(node);
+            this.drop(falling.id, node);
         });
 
         this.ctx.group.add(node);
-        this.itemNode = node;
+        this.itemNodes.set(falling.id, node);
+        return node;
     }
 
-    private drop(node: Konva.Group): void {
+    private drop(id: number, node: Konva.Group): void {
         if (!this.model) return;
 
         const centerX = node.x() + ITEM_WIDTH / 2;
@@ -188,11 +214,11 @@ export class SortingMinigame extends MiniGame {
         );
 
         if (!area) {
-            this.model.release(node.x() / this.maxX(), (node.y() - FALL_TOP) / this.fallDistance());
+            this.model.release(id, node.x() / this.maxX(), (node.y() - FALL_TOP) / this.fallDistance());
             return;
         }
 
-        const feedback = this.model.sort(area.bin);
+        const feedback = this.model.sort(id, area.bin);
         if (!feedback) return;
 
         if (feedback.correct) {
@@ -200,37 +226,21 @@ export class SortingMinigame extends MiniGame {
         } else {
             this.showFeedback(`Wrong bin. ${feedback.item.tip}`, COLORS.wrong);
         }
-        this.afterItem();
-    }
+        this.updateStatus();
 
-    private afterItem(): void {
-        if (this.model?.isDone()) {
+        if (this.model.isDone()) {
             this.renderEnd();
         } else {
-            this.showCurrentItem();
+            this.syncItems();
         }
     }
 
-    private showCurrentItem(): void {
-        const current = this.model?.getCurrent();
-        if (!this.model || !current || !this.itemLabel || !this.statusText) return;
+    private updateStatus(): void {
+        if (!this.model || !this.statusText) return;
 
-        this.itemLabel.text(current.item.name);
-        const { current: number, total } = this.model.getProgress();
+        const { done, total } = this.model.getProgress();
         const { score, streak } = this.model.getStats();
-        this.statusText.text(`Item ${number} of ${total} | Score ${score} | Streak ${streak}`);
-        this.placeItem();
-    }
-
-    private placeItem(): void {
-        const current = this.model?.getCurrent();
-        if (!current || !this.itemNode) return;
-
-        this.itemNode.position({
-            x: current.x * this.maxX(),
-            y: FALL_TOP + current.progress * this.fallDistance(),
-        });
-        this.redraw();
+        this.statusText.text(`Sorted ${done} of ${total} | Score ${score} | Streak ${streak}`);
     }
 
     private keepInside(node: Konva.Group): void {
@@ -273,8 +283,7 @@ export class SortingMinigame extends MiniGame {
 
     private clear(): void {
         this.ctx.group.destroyChildren();
-        this.itemNode = null;
-        this.itemLabel = null;
+        this.itemNodes.clear();
         this.statusText = null;
         this.feedbackText = null;
         this.setCursor("default");
