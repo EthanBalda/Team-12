@@ -13,6 +13,8 @@ export const POINTS = 100;
 export const STREAK_BONUS = 20;      
 export const MAX_STREAK_BONUS = 100;
 export const MONEY_PER_POINT = 5;
+export const MIN_SPEED = 1;
+export const MAX_SPEED = 1.5;
 
 export interface FallingItem {
     id: number;
@@ -20,6 +22,7 @@ export interface FallingItem {
     x: number;
     progress: number;
     held: boolean;
+    speed: number;
 }
 
 export interface SortFeedback {
@@ -83,7 +86,7 @@ export class SortingModel {
         if (this.isDone()) return { spawned, missed };
 
         for (const falling of this.active) {
-            if (!falling.held) falling.progress += ms / this.fallMs;
+            if (!falling.held) falling.progress += (ms / this.fallMs) * falling.speed;
         }
 
         for (const falling of this.active.filter((f) => f.progress >= 1)) {
@@ -158,6 +161,7 @@ export class SortingModel {
             x: this.random(),
             progress: 0,
             held: false,
+            speed: MIN_SPEED + this.random() * (MAX_SPEED - MIN_SPEED),
         };
         this.active.push(falling);
         this.sinceSpawn = 0;

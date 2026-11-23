@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DIFFICULTY, SortingModel, type Difficulty } from "../../../../MiniGames/sorting/SortingModel";
+import { DIFFICULTY, MAX_SPEED, MIN_SPEED, SortingModel, type Difficulty } from "../../../../MiniGames/sorting/SortingModel";
 import type { Bin, SortItem } from "../../../../MiniGames/sorting/items";
 
 const BINS: Bin[] = ["recycling", "compost", "trash"];
@@ -146,6 +146,22 @@ describe("SortingModel", () => {
         expect(missed).toHaveLength(1);
         expect(missed[0]!.id).not.toBe(held.id);
         expect(model.getActive().map((falling) => falling.id)).toContain(held.id);
+    });
+
+    it("gives each item a fall speed between the min and max", () => {
+        const slow = new SortingModel(ITEMS, "easy", () => 0);
+        const fast = new SortingModel(ITEMS, "easy", () => 0.999);
+
+        expect(slow.getActive()[0]!.speed).toBe(MIN_SPEED);
+        expect(fast.getActive()[0]!.speed).toBeCloseTo(MAX_SPEED, 2);
+    });
+
+    it("misses a fast item sooner than a slow one", () => {
+        const model = new SortingModel(ITEMS, "easy", () => 0.999);
+        const fallMs = DIFFICULTY.easy.fallMs;
+
+        expect(model.update(fallMs / MAX_SPEED - 10).missed).toHaveLength(0);
+        expect(model.update(20).missed).toHaveLength(1);
     });
 
     it("ends at once with no reward when there are no items", () => {
