@@ -101,6 +101,17 @@ describe("SortingModel", () => {
         expect(first(model)).toMatchObject({ id, x: 0.3, progress: 0.75 });
     });
 
+    it("does not move a released item back up", () => {
+        const model = makeModel();
+        model.update(DIFFICULTY.easy.fallMs / 2);
+        const { id } = first(model);
+        model.grab(id);
+
+        model.release(id, 0.5, 0.1);
+
+        expect(first(model).progress).toBe(0.5);
+    });
+
     it("pays $5 per point at the end of the round", () => {
         const model = makeModel();
         sortCurrent(model, true);

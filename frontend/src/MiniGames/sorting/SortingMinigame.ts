@@ -188,12 +188,17 @@ export class SortingMinigame extends MiniGame {
 
         node.on("mouseenter", () => this.setCursor("grab"));
         node.on("mouseleave", () => this.setCursor("default"));
+        let minY = 0;
         node.on("dragstart", () => {
+            minY = node.y();
             this.setCursor("grabbing");
             node.moveToTop();
             this.model?.grab(falling.id);
         });
-        node.on("dragmove", () => this.keepInside(node));
+        node.on("dragmove", () => {
+            this.keepInside(node, minY);
+            minY = node.y();
+        });
         node.on("dragend", () => {
             this.setCursor("grab");
             this.drop(falling.id, node);
@@ -243,9 +248,9 @@ export class SortingMinigame extends MiniGame {
         this.statusText.text(`Sorted ${done} of ${total} | Score ${score} | Streak ${streak}`);
     }
 
-    private keepInside(node: Konva.Group): void {
+    private keepInside(node: Konva.Group, minY : number): void {
         node.x(Math.min(Math.max(node.x(), 0), this.maxX()));
-        node.y(Math.min(Math.max(node.y(), 0), this.ctx.height - ITEM_HEIGHT));
+        node.y(Math.min(Math.max(node.y(), minY), this.ctx.height - ITEM_HEIGHT));
     }
 
     private renderEnd(): void {

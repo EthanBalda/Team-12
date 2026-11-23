@@ -124,6 +124,25 @@ describe("SortingMinigame", () => {
         expect(hasText(group, "Sorted 0 of 1")).toBe(true);
     });
 
+    it("never lets the player drag an item upward", () => {
+        const { group } = startGame();
+        click(group, "Easy");
+        passTime(DIFFICULTY.easy.fallMs / 2);
+        const item = items(group)[0]!;
+        const startY = item.y();
+
+        item.fire("dragstart");
+        item.y(0);
+        item.fire("dragmove");
+        expect(item.y()).toBe(startY);
+
+        item.y(startY + 50);
+        item.fire("dragmove");
+        item.y(startY);
+        item.fire("dragmove");
+        expect(item.y()).toBe(startY + 50);
+    });
+
     it("counts an item as missed when it falls to the bins", () => {
         const { group } = startGame();
         click(group, "Easy");

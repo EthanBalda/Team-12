@@ -115,7 +115,7 @@ export class SortingModel {
         if (!falling || !falling.held) return;
         falling.held = false;
         falling.x = clamp(x);
-        falling.progress = clamp(progress);
+        falling.progress = Math.max(falling.progress, clamp(progress));
     }
 
     sort(id: number, bin: Bin): SortFeedback | null {
