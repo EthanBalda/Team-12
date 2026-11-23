@@ -4,6 +4,7 @@ import Konva from "konva";
 import { MainGameScreenController } from "../../../screens/MainGameScreen/MainGameScreenController";
 import type { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScreenView";
 import { MainGameScreenModel } from "../../../screens/MainGameScreen/MainGameScreenModel";
+import { MINIGAME_FEE } from "../../../MiniGames/registry";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -14,6 +15,7 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
   // Use a class because the controller creates the view with "new".
   MainGameScreenView: class {
     clickEndYear: () => Promise<void>;
+    clickMinigame: (id: string) => void;
 
     getGroup = () => this.group;
     private group = new Konva.Group();
@@ -28,10 +30,11 @@ vi.mock("../../../screens/MainGameScreen/MainGameScreenView", () => ({
     constructor(
       _onBuild: unknown,
       onEndYear: () => Promise<void>,
-      _onMinigame: unknown
+      onMinigame: (id: string) => void
     ) {
       // Save the callback so our test can simulate the button click.
       this.clickEndYear = onEndYear;
+      this.clickMinigame = onMinigame;
     }
   },
 }));
@@ -294,5 +297,47 @@ describe("MainGameScreenController - End Year", () => {
         stats: expect.objectContaining({ year: 10 }),
       }),
     );
+  });
+});
+
+describe("MainGameScreenController - Minigame fee", () => {
+  beforeEach(() => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      measureText: (text: string) => ({ width: text.length * 10 }),
+      clearRect: vi.fn(),
+      fillRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      getImageData: () => ({ data: new Uint8ClampedArray(4) }),
+    } as unknown as CanvasRenderingContext2D);
+  });
+
+  function setup() {
+    const screenSwitcher = { switchToScreen: vi.fn() };
+    const controller = new MainGameScreenController(screenSwitcher as any);
+    const model = (controller as any).model as MainGameScreenModel;
+    const view = controller.getView() as MainGameScreenView & { clickMinigame: (id: string) => void };
+    return { screenSwitcher, model, view };
+  }
+
+  it("charges the fee and opens the chosen minigame", () => {
+    const { screenSwitcher, model, view } = setup();
+    const money = model.getStats().money;
+
+    view.clickMinigame("sorting");
+
+    expect(model.getStats().money).toBe(money - MINIGAME_FEE);
+    expect(screenSwitcher.switchToScreen).toHaveBeenCalledWith({ type: "miniGame", id: "sorting" });
+  });
+
+  it("does not open a minigame when the player cannot pay the fee", () => {
+    const { screenSwitcher, model, view } = setup();
+    model.spendMoney(model.getStats().money - (MINIGAME_FEE - 1));
+
+    view.clickMinigame("trivia");
+
+    expect(model.getStats().money).toBe(MINIGAME_FEE - 1);
+    expect(screenSwitcher.switchToScreen).not.toHaveBeenCalled();
+    expect(view.showMessage).toHaveBeenCalledWith("Not enough money to play!");
   });
 });

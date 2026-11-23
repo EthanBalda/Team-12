@@ -59,4 +59,12 @@ describe("MainGameScreenView minigame picker", () => {
     expect(onMinigame).not.toHaveBeenCalled();
     expect(findText(view, "Play a Minigame").isVisible()).toBe(false);
   });
+
+  it("shows the minigame fee in the picker", () => {
+    const { view } = makeView();
+
+    click(view, "Minigame");
+
+    expect(findText(view, "Each game costs $3,000").isVisible()).toBe(true);
+  });
 });
