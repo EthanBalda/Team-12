@@ -1,6 +1,7 @@
 import Konva from "konva";
 import type { View } from "../../types.ts";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
+import { MINIGAME_FEE } from "../../MiniGames/registry.ts";
 
 const BAR_HEIGHT = 80;
 const DIALOG_WIDTH = 460;
@@ -102,7 +103,7 @@ export class MiniGameScreenView implements View {
             x,
             y: y + 85,
             width: DIALOG_WIDTH,
-            text: "You won't get a reward.",
+            text: `You won't get a reward or your $${MINIGAME_FEE.toLocaleString("en-US")} back.`,
             fontSize: 20,
             fontFamily: "Arial",
             fill: "#59636e",

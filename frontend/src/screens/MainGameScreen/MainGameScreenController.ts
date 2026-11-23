@@ -14,7 +14,7 @@ import { compareScreenController } from "../CompareScreen/CompareScreenControlle
 import type { Build } from "../CompareScreen/CompareScreenModel";
 import { MainGameScreenView } from "./MainGameScreenView.ts";
 import type { MiniGameResult } from "../../MiniGames/types.ts";
-import { MINIGAME_CHOICES } from "../../MiniGames/registry.ts";
+import { MINIGAME_CHOICES, MINIGAME_FEE } from "../../MiniGames/registry.ts";
 import { ConfirmationScreenView } from "../ConfirmationScreen/ConfirmationScreenView";
 
 export class MainGameScreenController extends ScreenController {
@@ -40,9 +40,13 @@ export class MainGameScreenController extends ScreenController {
       () => this.openCompare(),
       () => this.handleEndYear(),
       (id) => {
-        if (this.weatherOverlay === null) {
-          this.screenSwitcher.switchToScreen({ type: "miniGame", id });
+        if (this.weatherOverlay !== null) return;
+        if (!this.model.spendMoney(MINIGAME_FEE)) {
+          this.view.showMessage("Not enough money to play!");
+          return;
         }
+        this.refreshView();
+        this.screenSwitcher.switchToScreen({ type: "miniGame", id });
       },
       async () => {
         try {

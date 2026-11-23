@@ -6,6 +6,7 @@ import { MainGameScreenView } from "../../../screens/MainGameScreen/MainGameScre
 import { WeatherEventScreenController } from "../../../screens/WeatherEventScreen/WeatherEventScreenController";
 import { WeatherEventScreenView } from "../../../screens/WeatherEventScreen/WeatherEventScreenView";
 import { floodEvent } from "../../../Weather/WeatherEvent";
+import { MINIGAME_FEE } from "../../../MiniGames/registry";
 import type { Build } from "../../../screens/CompareScreen/CompareScreenModel";
 import buildingsData from "../../../screens/CompareScreen/buildOptions.json";
 
@@ -137,7 +138,7 @@ describe("weather controller integration", () => {
     expect(switcher.switchToScreen).toHaveBeenCalledExactlyOnceWith({ type: "miniGame", id: "sorting" });
     controller.applyMiniGameResult({ delta: { money: 20000 }, summary: "reward" });
     controller.show(); // Incoming resumeGame navigation uses show(), not startGame().
-    expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget + 20000 }));
+    expect(view.updateStats).toHaveBeenLastCalledWith(expect.objectContaining({ year: 2, money: budget - MINIGAME_FEE + 20000 }));
     expect(view.updateBuildings).toHaveBeenLastCalledWith(buildings);
     expect(view.showMessage).toHaveBeenLastCalledWith("reward");
   });
