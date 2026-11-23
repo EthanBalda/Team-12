@@ -8,7 +8,7 @@ import {
 } from "./MainGameScreenModel.ts";
 import buildOptions from "../CompareScreen/buildOptions.json";
 import { STAGE_WIDTH, STAGE_HEIGHT } from "../../constants.ts";
-import { MINIGAME_CHOICES, type MiniGameChoice, type MiniGameId } from "../../MiniGames/registry.ts";
+import { MINIGAME_CHOICES, MINIGAME_FEE, type MiniGameChoice, type MiniGameId } from "../../MiniGames/registry.ts";
 
 export class MainGameScreenView implements View {
   private group: Konva.Group;
@@ -463,6 +463,16 @@ updatePopulationRequirement(
       fontFamily: "Arial",
       fontStyle: "bold",
       fill: "#17232c",
+    }));
+
+    this.minigameModal.add(new Konva.Text({
+      x: panelX + 25,
+      y: panelY + 50,
+      width: panelWidth - 50,
+      text: `Each game costs $${MINIGAME_FEE.toLocaleString("en-US")}`,
+      fontSize: 16,
+      fontFamily: "Arial",
+      fill: "#59636e",
     }));
 
     minigames.forEach((minigame, i) => {

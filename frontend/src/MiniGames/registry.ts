@@ -9,6 +9,8 @@ export const MINIGAMES = {
     trivia: () => new TriviaMinigame(),
 } satisfies Record<string, () => MiniGame>;
 
+export const MINIGAME_FEE = 3000;
+
 export type MiniGameId = keyof typeof MINIGAMES;
 
 export interface MiniGameChoice {
