@@ -5,8 +5,8 @@ export type Difficulty = "easy" | "medium" | "hard";
 
 export const DIFFICULTY: Record<Difficulty, { items: number; fallMs: number; spawnMs: number; maxActive: number }> = {
     easy:   { items: 8,  fallMs: 6000, spawnMs: 3000, maxActive: 2 },
-    medium: { items: 10, fallMs: 4000, spawnMs: 2000, maxActive: 3 },
-    hard:   { items: 12, fallMs: 2500, spawnMs: 1200, maxActive: 4 },
+    medium: { items: 10, fallMs: 4000, spawnMs: 2000, maxActive: 4 },
+    hard:   { items: 12, fallMs: 2500, spawnMs: 1200, maxActive: 5 },
 };
 
 export const POINTS = 100;
