@@ -84,6 +84,10 @@ export class CityWeatherEvent {
     return this.weather.purchasePreparation(preparationId);
   }
 
+  restorePurchasedPreparations(preparationIds: string[]): void {
+    this.weather.restorePurchasedPreparations(preparationIds);
+  }
+
   resolve(): WeatherResolution {
     if (this.resolution !== null) {
       return this.resolution;

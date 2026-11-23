@@ -93,6 +93,16 @@ export class WeatherEventModel {
     return { success: true };
   }
 
+  restorePurchasedPreparations(preparationIds: string[]): void {
+    this.purchasedPreparationIds.clear();
+
+    for (const id of preparationIds) {
+      if (this.event.preparations.some((option) => option.id === id)) {
+        this.purchasedPreparationIds.add(id);
+      }
+    }
+  }
+
   private hasHighPollution(): boolean {
     return this.city.pollution >= HIGH_POLLUTION_THRESHOLD;
   }
